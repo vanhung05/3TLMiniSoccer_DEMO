@@ -1,0 +1,457 @@
+@model _3TLMiniSoccer.ViewModels.ProductListViewModel
+@{
+    ViewData["Title"] = "Quản lý sản phẩm";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<h1 class="text-2xl font-bold text-gray-800 mb-6">Quản lý sản phẩm</h1>
+
+<!-- Filters -->
+<form method="get" action="@Url.Action("Products", "Admin")">
+<div class="bg-white rounded-lg shadow p-6 mb-6">
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">Tìm kiếm theo tên sản phẩm</label>
+      <input type="text" name="SearchTerm" value="@Model.Filter.SearchTerm" placeholder="Nhập tên sản phẩm..." class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">Thể loại</label>
+      <select name="Category" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+        <option value="">Tất cả thể loại</option>
+              @if (ViewBag.Categories != null)
+              {
+                @foreach (var category in (List<string>)ViewBag.Categories)
+                {
+                  @if (Model.Filter.Category == category)
+                  {
+                    <option value="@category" selected="selected">@category</option>
+                  }
+                  else
+                  {
+                    <option value="@category">@category</option>
+                  }
+                }
+              }
+      </select>
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">Trạng thái</label>
+      <select name="Status" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+        <option value="">Tất cả trạng thái</option>
+        @if (Model.Filter.Status == "active")
+        {
+          <option value="active" selected="selected">Hoạt động</option>
+        }
+        else
+        {
+          <option value="active">Hoạt động</option>
+        }
+        @if (Model.Filter.Status == "inactive")
+        {
+          <option value="inactive" selected="selected">Không hoạt động</option>
+        }
+        else
+        {
+          <option value="inactive">Không hoạt động</option>
+        }
+        @if (Model.Filter.Status == "out_of_stock")
+        {
+          <option value="out_of_stock" selected="selected">Hết hàng</option>
+        }
+        else
+        {
+          <option value="out_of_stock">Hết hàng</option>
+        }
+      </select>
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">Khoảng giá</label>
+      <div class="flex space-x-2">
+        <input type="number" name="MinPrice" value="@Model.Filter.MinPrice" placeholder="Từ" class="w-1/2 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+        <input type="number" name="MaxPrice" value="@Model.Filter.MaxPrice" placeholder="Đến" class="w-1/2 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+      </div>
+    </div>
+  </div>
+  <div class="mt-4 flex justify-end space-x-2">
+    <button type="button" onclick="clearFilters()" class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors">
+      <i data-lucide="x" class="w-4 h-4 inline mr-2"></i>
+      Xóa bộ lọc
+    </button>
+    <button type="submit" class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors">
+      <i data-lucide="search" class="w-4 h-4 inline mr-2"></i>
+      Tìm kiếm
+    </button>
+  </div>
+</div>
+</form>
+
+<!-- Products Table -->
+<div class="bg-white rounded-lg shadow overflow-hidden">
+  <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+    <h3 class="text-lg font-semibold text-gray-800">Danh sách sản phẩm</h3>
+    <button class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors" onclick="openAddProductModal()">
+      <i data-lucide="plus" class="w-4 h-4 inline mr-2"></i>
+      Thêm sản phẩm
+    </button>
+  </div>
+  
+  <div class="overflow-x-auto">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <input type="checkbox" class="rounded border-gray-300 text-green-600 focus:ring-green-500">
+          </th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sản phẩm</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SKU</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thể loại</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Giá</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tồn kho</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thao tác</th>
+        </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200">
+        @if (Model.Products.Any())
+        {
+          @foreach (var product in Model.Products)
+          {
+            <tr class="hover:bg-gray-50">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <input type="checkbox" class="rounded border-gray-300 text-green-600 focus:ring-green-500" value="@product.ProductId">
+              </td>
+              <td class="px-6 py-4">
+                <div class="flex items-center">
+                  <div class="w-16 h-16 bg-gray-200 rounded-md flex items-center justify-center mr-3">
+                    @if (!string.IsNullOrEmpty(product.ImageUrl))
+                    {
+                      <img src="@product.ImageUrl" alt="@product.ProductName" class="w-16 h-16 object-cover rounded-md">
+                    }
+                    else
+                    {
+                      <i data-lucide="image" class="w-8 h-8 text-gray-500"></i>
+                    }
+                  </div>
+                  <div>
+                    <div class="text-sm font-medium text-gray-900">@product.ProductName</div>
+                    @if (!string.IsNullOrEmpty(product.Description))
+                    {
+                      <div class="text-sm text-gray-500">@(product.Description.Length > 50 ? product.Description.Substring(0, 50) + "..." : product.Description)</div>
+                    }
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">@product.SKU</td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                @if (!string.IsNullOrEmpty(product.Category))
+                {
+                  <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">@product.Category</span>
+                }
+                else
+                {
+                  <span class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">Chưa phân loại</span>
+                }
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">@product.FormattedPrice</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">@product.StockQuantity</td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="px-2 py-1 text-xs font-semibold rounded-full @product.StatusClass">@product.StatusText</span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                <div class="flex space-x-2">
+                  <button class="text-blue-600 hover:text-blue-900" onclick="editProduct(@product.ProductId)">
+                    <i data-lucide="edit" class="w-4 h-4"></i>
+                  </button>
+                  <button class="text-green-600 hover:text-green-900" onclick="viewProduct(@product.ProductId)">
+                    <i data-lucide="eye" class="w-4 h-4"></i>
+                  </button>
+                  <button class="text-red-600 hover:text-red-900" onclick="deleteProduct(@product.ProductId)">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        }
+        else
+        {
+          <tr>
+            <td colspan="8" class="px-6 py-4 text-center text-gray-500">
+              <div class="flex flex-col items-center py-8">
+                <i data-lucide="package" class="w-12 h-12 text-gray-400 mb-4"></i>
+                <p class="text-lg font-medium text-gray-900 mb-2">Chưa có sản phẩm nào</p>
+                <p class="text-sm text-gray-500">Hãy thêm sản phẩm đầu tiên của bạn</p>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  
+  <!-- Pagination -->
+  @if (Model.TotalCount > 0)
+  {
+    <div class="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+      <div class="flex items-center">
+        <span class="text-sm text-gray-700">
+          Hiển thị @((Model.PageNumber - 1) * Model.PageSize + 1)-@(Math.Min(Model.PageNumber * Model.PageSize, Model.TotalCount)) của @Model.TotalCount kết quả
+        </span>
+      </div>
+      <div class="flex items-center space-x-2">
+        @if (Model.PageNumber > 1)
+        {
+          <a href="@Url.Action("Products", new { 
+            PageNumber = Model.PageNumber - 1, 
+            SearchTerm = Model.Filter.SearchTerm,
+            Category = Model.Filter.Category,
+            Status = Model.Filter.Status,
+            MinPrice = Model.Filter.MinPrice,
+            MaxPrice = Model.Filter.MaxPrice
+          })" class="px-3 py-1 text-sm text-gray-500 bg-gray-100 rounded-md hover:bg-gray-200">
+            <i data-lucide="chevron-left" class="w-4 h-4"></i>
+          </a>
+        }
+        else
+        {
+          <button class="px-3 py-1 text-sm text-gray-500 bg-gray-100 rounded-md opacity-50 cursor-not-allowed" disabled>
+            <i data-lucide="chevron-left" class="w-4 h-4"></i>
+          </button>
+        }
+        
+        @for (int i = Math.Max(1, Model.PageNumber - 2); i <= Math.Min(Model.TotalPages, Model.PageNumber + 2); i++)
+        {
+          if (i == Model.PageNumber)
+          {
+            <button class="px-3 py-1 text-sm text-white bg-green-500 rounded-md">@i</button>
+          }
+          else
+          {
+            <a href="@Url.Action("Products", new { 
+              PageNumber = i, 
+              SearchTerm = Model.Filter.SearchTerm,
+              Category = Model.Filter.Category,
+              Status = Model.Filter.Status,
+              MinPrice = Model.Filter.MinPrice,
+              MaxPrice = Model.Filter.MaxPrice
+            })" class="px-3 py-1 text-sm text-gray-500 bg-gray-100 rounded-md hover:bg-gray-200">@i</a>
+          }
+        }
+        
+        @if (Model.PageNumber < Model.TotalPages)
+        {
+          <a href="@Url.Action("Products", new { 
+            PageNumber = Model.PageNumber + 1, 
+            SearchTerm = Model.Filter.SearchTerm,
+            Category = Model.Filter.Category,
+            Status = Model.Filter.Status,
+            MinPrice = Model.Filter.MinPrice,
+            MaxPrice = Model.Filter.MaxPrice
+          })" class="px-3 py-1 text-sm text-gray-500 bg-gray-100 rounded-md hover:bg-gray-200">
+            <i data-lucide="chevron-right" class="w-4 h-4"></i>
+          </a>
+        }
+        else
+        {
+          <button class="px-3 py-1 text-sm text-gray-500 bg-gray-100 rounded-md opacity-50 cursor-not-allowed" disabled>
+            <i data-lucide="chevron-right" class="w-4 h-4"></i>
+          </button>
+        }
+      </div>
+    </div>
+  }
+</div>
+
+<!-- Add/Edit Product Modal -->
+<div id="productModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+  <div class="flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full">
+      <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+        <h3 class="text-lg font-semibold text-gray-800" id="modalTitle">Thêm sản phẩm mới</h3>
+        <button onclick="closeProductModal()" class="text-gray-400 hover:text-gray-600">
+          <i data-lucide="x" class="w-6 h-6"></i>
+        </button>
+      </div>
+      
+      <form class="p-6 space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Tên sản phẩm *</label>
+            <input type="text" name="ProductName" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Thể loại</label>
+            <select name="Category" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+              <option value="">Chọn thể loại</option>
+              @if (ViewBag.Categories != null)
+              {
+                @foreach (var category in (List<string>)ViewBag.Categories)
+                {
+                  <option value="@category">@category</option>
+                }
+              }
+            </select>
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Giá bán *</label>
+            <input type="number" name="Price" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Ví dụ: 1200000">
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Trạng thái</label>
+            <div class="flex items-center">
+              <input type="checkbox" name="IsAvailable" checked class="rounded border-gray-300 text-green-600 focus:ring-green-500 mr-2">
+              <label class="text-sm text-gray-700">Hoạt động</label>
+            </div>
+          </div>
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Mô tả sản phẩm</label>
+          <textarea name="Description" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Nhập mô tả sản phẩm..."></textarea>
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Hình ảnh sản phẩm</label>
+          <input type="file" name="ImageFile" accept="image/*" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+          <p class="text-xs text-gray-500 mt-1">Chọn hình ảnh cho sản phẩm</p>
+        </div>
+        
+        
+        <div class="flex justify-end space-x-2 pt-4">
+          <button type="button" onclick="closeProductModal()" class="px-4 py-2 text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors">
+            Hủy
+          </button>
+          <button type="submit" class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors">
+            Lưu
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Initialize Lucide icons
+  lucide.createIcons();
+  
+  function clearFilters() {
+    // Clear all filter inputs
+    document.querySelector('input[name="SearchTerm"]').value = '';
+    document.querySelector('select[name="Category"]').value = '';
+    document.querySelector('select[name="Status"]').value = '';
+    document.querySelector('input[name="MinPrice"]').value = '';
+    document.querySelector('input[name="MaxPrice"]').value = '';
+    
+    // Submit form to reload with cleared filters
+    document.querySelector('form').submit();
+  }
+
+  function openAddProductModal() {
+    document.getElementById('productModal').classList.remove('hidden');
+    document.getElementById('modalTitle').textContent = 'Thêm sản phẩm mới';
+    // Clear form
+    document.querySelector('#productModal form').reset();
+  }
+  
+  async function editProduct(productId) {
+    try {
+      const response = await fetch(`/Admin/GetProduct/${productId}`);
+      const result = await response.json();
+      
+      if (result.success) {
+        document.getElementById('productModal').classList.remove('hidden');
+        document.getElementById('modalTitle').textContent = 'Chỉnh sửa sản phẩm';
+        
+        // Populate form with product data
+        const form = document.querySelector('#productModal form');
+        form.querySelector('input[name="ProductName"]').value = result.data.productName;
+        form.querySelector('textarea[name="Description"]').value = result.data.description || '';
+        form.querySelector('input[name="Price"]').value = result.data.price;
+        form.querySelector('select[name="Category"]').value = result.data.category || '';
+        form.querySelector('input[name="IsAvailable"]').checked = result.data.isAvailable;
+        
+        // Store product ID for update
+        form.setAttribute('data-product-id', productId);
+      } else {
+        alert('Không thể tải thông tin sản phẩm: ' + result.message);
+      }
+    } catch (error) {
+      console.error('Error loading product:', error);
+      alert('Có lỗi xảy ra khi tải thông tin sản phẩm');
+    }
+  }
+  
+  function closeProductModal() {
+    document.getElementById('productModal').classList.add('hidden');
+    document.querySelector('#productModal form').removeAttribute('data-product-id');
+  }
+  
+  function viewProduct(productId) {
+    // You can implement a view modal or redirect to details page
+    alert('Xem chi tiết sản phẩm ID: ' + productId);
+  }
+  
+  async function deleteProduct(productId) {
+    if (confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')) {
+      try {
+        const response = await fetch(`/Admin/DeleteProduct/${productId}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          showToastAndReload('success', 'Thành công!', result.message);
+        } else {
+          showToast('error', 'Thất bại!', 'Lỗi: ' + result.message);
+        }
+      } catch (error) {
+      console.error('Error deleting product:', error);
+      showToast('error', 'Thất bại!', 'Có lỗi xảy ra khi xóa sản phẩm');
+      }
+    }
+  }
+  
+  // Handle form submission
+  document.querySelector('#productModal form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const productId = this.getAttribute('data-product-id');
+    
+    try {
+      const url = productId ? `/Admin/UpdateProduct/${productId}` : '/Admin/CreateProduct';
+      const response = await fetch(url, {
+        method: 'POST',
+        body: formData
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        showToastAndReload('success', 'Thành công!', result.message);
+        closeProductModal();
+      } else {
+        showToast('error', 'Thất bại!', 'Lỗi: ' + result.message);
+      }
+    } catch (error) {
+      console.error('Error saving product:', error);
+      showToast('error', 'Thất bại!', 'Có lỗi xảy ra khi lưu sản phẩm');
+    }
+  });
+
+  // Close modal when clicking outside
+  document.getElementById('productModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+      closeProductModal();
+    }
+  });
+</script>

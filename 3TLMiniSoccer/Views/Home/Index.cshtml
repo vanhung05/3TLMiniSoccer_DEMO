@@ -1,0 +1,478 @@
+﻿@model _3TLMiniSoccer.ViewModels.HomeIndexViewModel
+@{
+    ViewData["Title"] = "3TL Mini Soccer - Sân bóng mini chất lượng cao";
+}
+
+<!-- Hero Section -->
+<section class="relative hero-home text-white">
+    <div class="absolute inset-0 bg-black opacity-20"></div>
+    <div class="container mx-auto px-4 py-16 md:py-20 relative z-10">
+        <div class="grid lg:grid-cols-2 gap-12 items-center">
+            <!-- Left content -->
+            <div class="max-w-3xl">
+                <h1 class="text-4xl md:text-5xl font-bold mb-6" data-aos="fade-right">Sân bóng mini 5 người & 7 người tại 3TL Mini Soccer</h1>
+                <p class="text-lg mb-8 typing-text" data-aos="fade-up" data-aos-delay="100" id="typing-text">Chúng tôi cung cấp sân bóng chất lượng cao với mặt cỏ nhân tạo đạt chuẩn FIFA, hệ thống đèn LED chiếu sáng hiện đại, bãi đỗ xe rộng rãi và dịch vụ chuyên nghiệp.</p>
+                <div class="flex flex-wrap gap-4" data-aos="zoom-in" data-aos-delay="200">
+                    <a href="@Url.Action("Index", "Field")" class="bg-accent hover:bg-yellow-600 text-white font-bold py-3 px-6 rounded-full transition shake-button">Đặt sân ngay</a>
+                    <a href="@Url.Action("Index", "Field")" class="bg-white hover:bg-gray-100 text-primary font-bold py-3 px-6 rounded-full transition">Xem bảng giá</a>
+                </div>
+            </div>
+            
+            <!-- Right slider -->
+            <div class="slider-container" data-aos="fade-left" data-aos-delay="300">
+                <div class="slider-wrapper" id="slider-wrapper">
+                    <div class="slider-slide" style="background-image: linear-gradient(45deg, #16a34a, #15803d), url('data:image/svg+xml;charset=utf-8,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;0 0 800 600&quot;><rect fill=&quot;%2316a34a&quot; width=&quot;800&quot; height=&quot;600&quot;/><circle fill=&quot;%23ffffff&quot; cx=&quot;400&quot; cy=&quot;300&quot; r=&quot;80&quot;/><rect fill=&quot;%23ffffff&quot; x=&quot;0&quot; y=&quot;290&quot; width=&quot;800&quot; height=&quot;20&quot;/><rect fill=&quot;%23ffffff&quot; x=&quot;390&quot; y=&quot;0&quot; width=&quot;20&quot; height=&quot;600&quot;/><circle fill=&quot;%23ffffff&quot; cx=&quot;100&quot; cy=&quot;300&quot; r=&quot;30&quot;/><circle fill=&quot;%23ffffff&quot; cx=&quot;700&quot; cy=&quot;300&quot; r=&quot;30&quot;/></svg>')"></div>
+                    <div class="slider-slide" style="background-image: linear-gradient(45deg, #16a34a, #15803d), url('data:image/svg+xml;charset=utf-8,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;0 0 800 600&quot;><rect fill=&quot;%2316a34a&quot; width=&quot;800&quot; height=&quot;600&quot;/><circle fill=&quot;%23ffffff&quot; cx=&quot;400&quot; cy=&quot;300&quot; r=&quot;80&quot;/><rect fill=&quot;%23ffffff&quot; x=&quot;0&quot; y=&quot;290&quot; width=&quot;800&quot; height=&quot;20&quot;/><rect fill=&quot;%23ffffff&quot; x=&quot;390&quot; y=&quot;0&quot; width=&quot;20&quot; height=&quot;600&quot;/><circle fill=&quot;%23ffffff&quot; cx=&quot;100&quot; cy=&quot;300&quot; r=&quot;30&quot;/><circle fill=&quot;%23ffffff&quot; cx=&quot;700&quot; cy=&quot;300&quot; r=&quot;30&quot;/><rect fill=&quot;%23f59e0b&quot; x=&quot;350&quot; y=&quot;250&quot; width=&quot;100&quot; height=&quot;100&quot; rx=&quot;10&quot;/></svg>')"></div>
+                    <div class="slider-slide" style="background-image: linear-gradient(45deg, #16a34a, #15803d), url('data:image/svg+xml;charset=utf-8,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;0 0 800 600&quot;><rect fill=&quot;%2316a34a&quot; width=&quot;800&quot; height=&quot;600&quot;/><circle fill=&quot;%23ffffff&quot; cx=&quot;400&quot; cy=&quot;300&quot; r=&quot;80&quot;/><rect fill=&quot;%23ffffff&quot; x=&quot;0&quot; y=&quot;290&quot; width=&quot;800&quot; height=&quot;20&quot;/><rect fill=&quot;%23ffffff&quot; x=&quot;390&quot; y=&quot;0&quot; width=&quot;20&quot; height=&quot;600&quot;/><circle fill=&quot;%23ffffff&quot; cx=&quot;100&quot; cy=&quot;300&quot; r=&quot;30&quot;/><circle fill=&quot;%23ffffff&quot; cx=&quot;700&quot; cy=&quot;300&quot; r=&quot;30&quot;/><circle fill=&quot;%23ffffff&quot; cx=&quot;200&quot; cy=&quot;200&quot; r=&quot;15&quot;/><circle fill=&quot;%23ffffff&quot; cx=&quot;600&quot; cy=&quot;400&quot; r=&quot;15&quot;/></svg>')"></div>
+                    <div class="slider-slide" style="background-image: linear-gradient(45deg, #16a34a, #15803d), url('data:image/svg+xml;charset=utf-8,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;0 0 800 600&quot;><rect fill=&quot;%2316a34a&quot; width=&quot;800&quot; height=&quot;600&quot;/><circle fill=&quot;%23ffffff&quot; cx=&quot;400&quot; cy=&quot;300&quot; r=&quot;80&quot;/><rect fill=&quot;%23ffffff&quot; x=&quot;0&quot; y=&quot;290&quot; width=&quot;800&quot; height=&quot;20&quot;/><rect fill=&quot;%23ffffff&quot; x=&quot;390&quot; y=&quot;0&quot; width=&quot;20&quot; height=&quot;600&quot;/><circle fill=&quot;%23ffffff&quot; cx=&quot;100&quot; cy=&quot;300&quot; r=&quot;30&quot;/><circle fill=&quot;%23ffffff&quot; cx=&quot;700&quot; cy=&quot;300&quot; r=&quot;30&quot;/><rect fill=&quot;%23ffffff&quot; x=&quot;300&quot; y=&quot;100&quot; width=&quot;200&quot; height=&quot;50&quot; rx=&quot;25&quot;/></svg>')"></div>
+                    <div class="slider-slide" style="background-image: linear-gradient(45deg, #16a34a, #15803d), url('data:image/svg+xml;charset=utf-8,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;0 0 800 600&quot;><rect fill=&quot;%2316a34a&quot; width=&quot;800&quot; height=&quot;600&quot;/><circle fill=&quot;%23ffffff&quot; cx=&quot;400&quot; cy=&quot;300&quot; r=&quot;80&quot;/><rect fill=&quot;%23ffffff&quot; x=&quot;0&quot; y=&quot;290&quot; width=&quot;800&quot; height=&quot;20&quot;/><rect fill=&quot;%23ffffff&quot; x=&quot;390&quot; y=&quot;0&quot; width=&quot;20&quot; height=&quot;600&quot;/><circle fill=&quot;%23ffffff&quot; cx=&quot;100&quot; cy=&quot;300&quot; r=&quot;30&quot;/><circle fill=&quot;%23ffffff&quot; cx=&quot;700&quot; cy=&quot;300&quot; r=&quot;30&quot;/><polygon fill=&quot;%23ffffff&quot; points=&quot;400,200 420,240 380,240&quot;/></svg>')"></div>
+                </div>
+                <div class="slider-dots">
+                    <div class="slider-dot active" data-slide="0"></div>
+                    <div class="slider-dot" data-slide="1"></div>
+                    <div class="slider-dot" data-slide="2"></div>
+                    <div class="slider-dot" data-slide="3"></div>
+                    <div class="slider-dot" data-slide="4"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Mini Stats -->
+    <div class="container mx-auto px-4 relative z-10 -mt-12">
+        <div class="bg-white rounded-xl shadow-lg p-5 grid grid-cols-2 md:grid-cols-4 gap-4" data-aos="flip-up">
+            <div class="text-center">
+                <div class="text-3xl font-bold text-primary counter" data-target="@Model.TotalFields">0+</div>
+                <div class="text-gray-600">Sân bóng</div>
+            </div>
+            <div class="text-center">
+                <div class="text-3xl font-bold text-primary counter" data-target="@Model.TotalBookings">0+</div>
+                <div class="text-gray-600">Lượt đặt</div>
+            </div>
+            <div class="text-center">
+                <div class="text-3xl font-bold text-primary counter" data-target="4.8" data-suffix="★">0★</div>
+                <div class="text-gray-600">Đánh giá</div>
+            </div>
+            <div class="text-center">
+                <div class="text-3xl font-bold text-primary counter" data-target="24" data-suffix="/7">0/7</div>
+                <div class="text-gray-600">Hỗ trợ</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- About & Services Section -->
+<section class="py-16 bg-gray-50">
+    <div class="container mx-auto px-4">
+        <div class="text-center mb-10">
+            <h2 class="text-3xl font-bold mb-4" data-aos="fade-up">Về sân & dịch vụ nổi bật</h2>
+            <p class="text-gray-600 max-w-2xl mx-auto" data-aos="fade-up" data-aos-delay="100">Chúng tôi tự hào mang đến những dịch vụ và tiện ích tốt nhất cho cộng đồng yêu bóng đá</p>
+        </div>
+        
+        <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <!-- Card 1 -->
+            <div class="bg-white rounded-xl shadow-md overflow-hidden card-hover" data-aos="fade-right" data-aos-delay="100">
+                <div class="p-6">
+                    <div class="w-12 h-12 bg-primary bg-opacity-10 rounded-full flex items-center justify-center mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 2v4"></path>
+                            <path d="m16.2 7.8 2.9-2.9"></path>
+                            <path d="M18 12h4"></path>
+                            <path d="m16.2 16.2 2.9 2.9"></path>
+                            <path d="M12 18v4"></path>
+                            <path d="m4.9 19.1 2.9-2.9"></path>
+                            <path d="M2 12h4"></path>
+                            <path d="m4.9 4.9 2.9 2.9"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Mặt cỏ đạt chuẩn</h3>
+                    <p class="text-gray-600">Sử dụng cỏ nhân tạo chất lượng cao, đạt tiêu chuẩn FIFA với độ đàn hồi và độ bền vượt trội.</p>
+                </div>
+            </div>
+            
+            <!-- Card 2 -->
+            <div class="bg-white rounded-xl shadow-md overflow-hidden card-hover" data-aos="fade-up" data-aos-delay="200">
+                <div class="p-6">
+                    <div class="w-12 h-12 bg-primary bg-opacity-10 rounded-full flex items-center justify-center mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 2v4"></path>
+                            <path d="m16.2 7.8 2.9-2.9"></path>
+                            <path d="M18 12h4"></path>
+                            <path d="m16.2 16.2 2.9 2.9"></path>
+                            <path d="M12 18v4"></path>
+                            <path d="m4.9 19.1 2.9-2.9"></path>
+                            <path d="M2 12h4"></path>
+                            <path d="m4.9 4.9 2.9 2.9"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Đèn LED ban đêm</h3>
+                    <p class="text-gray-600">Hệ thống đèn LED công suất cao, đảm bảo ánh sáng đồng đều cho các trận đấu về đêm.</p>
+                </div>
+            </div>
+            
+            <!-- Card 3 -->
+            <div class="bg-white rounded-xl shadow-md overflow-hidden card-hover" data-aos="fade-left" data-aos-delay="300">
+                <div class="p-6">
+                    <div class="w-12 h-12 bg-primary bg-opacity-10 rounded-full flex items-center justify-center mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 2v4"></path>
+                            <path d="m16.2 7.8 2.9-2.9"></path>
+                            <path d="M18 12h4"></path>
+                            <path d="m16.2 16.2 2.9 2.9"></path>
+                            <path d="M12 18v4"></path>
+                            <path d="m4.9 19.1 2.9-2.9"></path>
+                            <path d="M2 12h4"></path>
+                            <path d="m4.9 4.9 2.9 2.9"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Phòng thay đồ</h3>
+                    <p class="text-gray-600">Phòng thay đồ rộng rãi, vệ sinh sạch sẽ với đầy đủ tiện nghi như tủ đồ, vòi sen nóng lạnh.</p>
+                </div>
+            </div>
+            
+            <!-- Card 4 -->
+            <div class="bg-white rounded-xl shadow-md overflow-hidden card-hover" data-aos="fade-down" data-aos-delay="400">
+                <div class="p-6">
+                    <div class="w-12 h-12 bg-primary bg-opacity-10 rounded-full flex items-center justify-center mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 2v4"></path>
+                            <path d="m16.2 7.8 2.9-2.9"></path>
+                            <path d="M18 12h4"></path>
+                            <path d="m16.2 16.2 2.9 2.9"></path>
+                            <path d="M12 18v4"></path>
+                            <path d="m4.9 19.1 2.9-2.9"></path>
+                            <path d="M2 12h4"></path>
+                            <path d="m4.9 4.9 2.9 2.9"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Thuê dụng cụ</h3>
+                    <p class="text-gray-600">Dịch vụ cho thuê áo đấu, bóng, giày và các dụng cụ bảo hộ với chất lượng đảm bảo.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Pitch System Section -->
+<section class="py-16">
+    <div class="container mx-auto px-4">
+        <div class="text-center mb-10">
+            <h2 class="text-3xl font-bold mb-4" data-aos="fade-up">Hệ thống sân</h2>
+            <p class="text-gray-600 max-w-2xl mx-auto" data-aos="fade-up" data-aos-delay="100">Lựa chọn sân phù hợp với nhu cầu của bạn</p>
+        </div>
+        
+        <!-- Filters -->
+        <div class="flex flex-wrap justify-center gap-4 mb-8" data-aos="fade-up">
+            <div class="bg-white border border-gray-200 rounded-full px-4 py-2 flex items-center">
+                <span class="mr-2">Loại sân:</span>
+                <select class="bg-transparent border-none focus:outline-none">
+                    <option>Tất cả</option>
+                    <option>5 người</option>
+                    <option>7 người</option>
+                </select>
+            </div>
+            <div class="bg-white border border-gray-200 rounded-full px-4 py-2 flex items-center">
+                <span class="mr-2">Khung giờ:</span>
+                <select class="bg-transparent border-none focus:outline-none">
+                    <option>Tất cả</option>
+                    <option>Sáng (6h-12h)</option>
+                    <option>Chiều (12h-18h)</option>
+                    <option>Tối (18h-23h)</option>
+                </select>
+            </div>
+        </div>
+        
+        <!-- Pitch Cards -->
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            @foreach (var field in Model.Fields.Take(6))
+            {
+                <div class="bg-white rounded-xl shadow-md overflow-hidden card-hover" data-aos="zoom-in" data-aos-delay="100">
+                    @if (!string.IsNullOrEmpty(field.ImageUrl))
+                    {
+                        <img src="/images/san/@field.ImageUrl" alt="@field.FieldName" class="h-48 w-full object-cover" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0yNCAyNEg0MFY0MEgyNFYyNFoiIGZpbGw9IiM5Q0EzQUYiLz4KPHBhdGggZD0iTTI4IDI4SDM2VjM2SDI4VjI4WiIgZmlsbD0iI0ZGRkZGRiIvPgo8L3N2Zz4K'">
+                    }
+                    else
+                    {
+                        <div class="h-48 placeholder-img"></div>
+                    }
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="text-xl font-bold">@field.FieldName</h3>
+                            <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded">@field.FieldType.TypeName</span>
+                        </div>
+                        <div class="flex items-center text-gray-600 mb-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                            <span>@field.FieldType.BasePrice.ToString("N0")đ/giờ</span>
+                        </div>
+                        <div class="flex justify-between items-center mb-4">
+                            <span class="text-lg font-bold text-primary">@field.FieldType.BasePrice.ToString("N0")đ/giờ</span>
+                            <div class="flex">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                </svg>
+                                <span class="ml-1">4.8</span>
+                            </div>
+                        </div>
+                        <a href="@Url.Action("Details", "Field", new { id = field.FieldId })" class="block text-center bg-primary hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition">Chi tiết sân</a>
+                    </div>
+                </div>
+            }
+        </div>
+        
+        <div class="text-center mt-8" data-aos="fade-up">
+            <a href="@Url.Action("Index", "Field")" class="inline-block border border-primary text-primary hover:bg-primary hover:text-white font-medium py-2 px-6 rounded-lg transition">Xem tất cả sân</a>
+        </div>
+    </div>
+</section>
+
+
+<!-- Shop Teaser Section -->
+<section class="py-16 bg-gray-50">
+    <div class="container mx-auto px-4">
+        <div class="text-center mb-10">
+            <h2 class="text-3xl font-bold mb-4" data-aos="fade-up">Cửa hàng</h2>
+            <p class="text-gray-600 max-w-2xl mx-auto" data-aos="fade-up" data-aos-delay="100">Các sản phẩm chất lượng dành cho cầu thủ</p>
+        </div>
+        
+        <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            @foreach (var product in Model.FeaturedProducts.Take(4))
+            {
+                <div class="bg-white rounded-xl shadow-md overflow-hidden card-hover" data-aos="slide-up" data-aos-delay="100">
+                    <div class="h-48 placeholder-img"></div>
+                    <div class="p-6">
+                        <h3 class="text-lg font-bold mb-2">@product.ProductName</h3>
+                        <div class="flex justify-between items-center mb-4">
+                            <span class="text-primary font-bold">@product.Price.ToString("N0")đ</span>
+                            <button class="text-gray-500 hover:text-primary">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="9" cy="21" r="1"></circle>
+                                    <circle cx="20" cy="21" r="1"></circle>
+                                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        <a href="@Url.Action("Details", "Shop", new { id = product.ProductId })" class="block text-center border border-primary text-primary hover:bg-primary hover:text-white font-medium py-2 px-4 rounded-lg transition">Xem chi tiết</a>
+                    </div>
+                </div>
+            }
+        </div>
+        
+        <div class="text-center mt-8" data-aos="fade-up">
+            <a href="@Url.Action("Index", "Shop")" class="inline-block bg-primary hover:bg-green-700 text-white font-medium py-3 px-6 rounded-lg transition">Xem tất cả sản phẩm</a>
+        </div>
+    </div>
+</section>
+
+
+<!-- Testimonials Section -->
+<section class="py-16">
+    <div class="container mx-auto px-4">
+        <div class="text-center mb-10">
+            <h2 class="text-3xl font-bold mb-4" data-aos="fade-up">Đánh giá khách hàng</h2>
+            <p class="text-gray-600 max-w-2xl mx-auto" data-aos="fade-up" data-aos-delay="100">Những gì khách hàng nói về chúng tôi</p>
+        </div>
+        
+        <div class="grid md:grid-cols-3 gap-6">
+            <!-- Testimonial 1 -->
+            <div class="bg-white rounded-xl shadow-md p-6" data-aos="fade-in" data-aos-delay="100">
+                <div class="flex items-center mb-4">
+                    <div class="w-12 h-12 rounded-full placeholder-img mr-4"></div>
+                    <div>
+                        <h4 class="font-bold">Nguyễn Văn A</h4>
+                        <div class="flex">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                            </svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                            </svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                            </svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                            </svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                <p class="text-gray-600">"Sân bóng chất lượng tốt, mặt cỏ êm, đèn sáng rõ. Nhân viên nhiệt tình, luôn hỗ trợ khi cần. Đội bóng chúng tôi đã chơi ở đây nhiều lần và rất hài lòng."</p>
+            </div>
+            
+            <!-- Testimonial 2 -->
+            <div class="bg-white rounded-xl shadow-md p-6" data-aos="fade-in" data-aos-delay="200">
+                <div class="flex items-center mb-4">
+                    <div class="w-12 h-12 rounded-full placeholder-img mr-4"></div>
+                    <div>
+                        <h4 class="font-bold">Trần Thị B</h4>
+                        <div class="flex">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                            </svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                            </svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                            </svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                            </svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                <p class="text-gray-600">"Phòng thay đồ sạch sẽ, có đầy đủ tiện nghi. Giá cả hợp lý so với chất lượng. Đặc biệt thích hệ thống đặt sân online rất tiện lợi, không phải chờ đợi."</p>
+            </div>
+            
+            <!-- Testimonial 3 -->
+            <div class="bg-white rounded-xl shadow-md p-6" data-aos="fade-in" data-aos-delay="300">
+                <div class="flex items-center mb-4">
+                    <div class="w-12 h-12 rounded-full placeholder-img mr-4"></div>
+                    <div>
+                        <h4 class="font-bold">Lê Văn C</h4>
+                        <div class="flex">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                            </svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                            </svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                            </svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                            </svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                <p class="text-gray-600">"Đã tổ chức giải đấu công ty tại đây, mọi thứ rất chuyên nghiệp từ khâu đặt sân đến dịch vụ trong ngày thi đấu. Sẽ tiếp tục ủng hộ 3TL trong các sự kiện tiếp theo."</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Final CTA Section -->
+<section class="py-20 bg-primary text-white">
+    <div class="container mx-auto px-4 text-center">
+        <h2 class="text-3xl font-bold mb-4" data-aos="bounce-in">Sẵn sàng vào sân?</h2>
+        <p class="text-xl mb-8 max-w-2xl mx-auto" data-aos="fade-in" data-aos-delay="100">Đặt sân ngay hôm nay để trải nghiệm chất lượng dịch vụ tốt nhất</p>
+        <a href="@Url.Action("Index", "Field")" class="inline-block bg-white hover:bg-gray-100 text-primary font-bold py-3 px-8 rounded-full transition" data-aos="bounce-in" data-aos-delay="200">Đặt sân ngay</a>
+    </div>
+</section>
+
+<script>
+    // Initialize AOS animation
+    AOS.init({
+        duration: 800,
+        easing: 'ease-in-out',
+        once: true
+    });
+    
+    // Slider functionality
+    let currentSlide = 0;
+    const sliderWrapper = document.getElementById('slider-wrapper');
+    const dots = document.querySelectorAll('.slider-dot');
+    const totalSlides = 5;
+    
+    function updateSlider() {
+        const translateX = -currentSlide * 20; // 20% per slide
+        sliderWrapper.style.transform = `translateX(${translateX}%)`;
+        
+        // Update dots
+        dots.forEach((dot, index) => {
+            dot.classList.toggle('active', index === currentSlide);
+        });
+    }
+    
+    function nextSlide() {
+        currentSlide = (currentSlide + 1) % totalSlides;
+        updateSlider();
+    }
+    
+    // Auto-slide every 4 seconds
+    setInterval(nextSlide, 4000);
+    
+    // Dot navigation
+    dots.forEach((dot, index) => {
+        dot.addEventListener('click', () => {
+            currentSlide = index;
+            updateSlider();
+        });
+    });
+    
+    // Typing effect
+    function typeWriter(element, text, speed = 50) {
+        let i = 0;
+        element.innerHTML = '';
+        element.classList.remove('typing-text'); // Remove cursor during typing
+        
+        function type() {
+            if (i < text.length) {
+                element.innerHTML += text.charAt(i);
+                i++;
+                setTimeout(type, speed);
+            } else {
+                // Add cursor back after typing is complete
+                element.classList.add('typing-text');
+            }
+        }
+        
+        type();
+    }
+    
+    // Counter animation function
+    function animateCounter(element, target, duration = 2000, suffix = '+') {
+        const start = 0;
+        const increment = target / (duration / 16); // 60fps
+        let current = start;
+        
+        const timer = setInterval(() => {
+            current += increment;
+            if (current >= target) {
+                current = target;
+                clearInterval(timer);
+            }
+            
+            if (target % 1 === 0) {
+                // Integer
+                element.textContent = Math.floor(current) + suffix;
+            } else {
+                // Decimal
+                element.textContent = current.toFixed(1) + suffix;
+            }
+        }, 16);
+    }
+    
+    // Initialize typing effect and counter animation when page loads
+    window.addEventListener('load', () => {
+        const typingElement = document.getElementById('typing-text');
+        const originalText = typingElement.textContent;
+        
+        // Wait for AOS animation to complete
+        setTimeout(() => {
+            typeWriter(typingElement, originalText, 30);
+        }, 1000);
+        
+        // Initialize counter animations
+        setTimeout(() => {
+            const counters = document.querySelectorAll('.counter');
+            counters.forEach(counter => {
+                const target = parseFloat(counter.getAttribute('data-target'));
+                const suffix = counter.getAttribute('data-suffix') || '+';
+                animateCounter(counter, target, 2000, suffix);
+            });
+        }, 1500);
+    });
+</script>

@@ -1,0 +1,864 @@
+@model _3TLMiniSoccer.ViewModels.BookingScheduleViewModel
+@{
+    ViewData["Title"] = "Lịch đặt sân";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="flex-1 overflow-y-auto p-6 bg-gray-50">
+    <!-- Header Actions -->
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-gray-800" id="page-title">Đang chờ xử lý</h1>
+        <div class="flex space-x-2">
+            <button onclick="openScheduleModal()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+                <i data-lucide="calendar" class="w-4 h-4"></i>
+                <span>Xem lịch</span>
+            </button>
+            <button onclick="openBookingModal()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+                <span>Thêm đặt sân</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="bg-white rounded-lg shadow mb-6">
+        <div class="border-b border-gray-200">
+            <nav class="-mb-px flex space-x-8 px-6" aria-label="Tabs">
+                <button onclick="switchTab('pending')" id="pending-tab" class="tab-button active border-yellow-500 text-yellow-600 py-4 px-1 border-b-2 font-medium text-sm">
+                    <span class="flex items-center">
+                        <i data-lucide="clock" class="w-4 h-4 mr-2"></i>
+                        Đang chờ xử lý
+                        <span class="ml-2 bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded-full">@Model.Statistics.PendingBookings</span>
+                    </span>
+                </button>
+                <button onclick="switchTab('processed')" id="processed-tab" class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 py-4 px-1 border-b-2 font-medium text-sm">
+                    <span class="flex items-center">
+                        <i data-lucide="check-circle" class="w-4 h-4 mr-2"></i>
+                        Đã xử lý
+                        <span class="ml-2 bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">@(Model.Statistics.ConfirmedBookings + Model.Statistics.CancelledBookings + Model.Statistics.CompletedBookings)</span>
+                    </span>
+                </button>
+                <button onclick="switchTab('all')" id="all-tab" class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 py-4 px-1 border-b-2 font-medium text-sm">
+                    <span class="flex items-center">
+                        <i data-lucide="calendar" class="w-4 h-4 mr-2"></i>
+                        Tất cả
+                        <span class="ml-2 bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">@Model.TotalCount</span>
+                    </span>
+                </button>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Filters and Search -->
+    <div class="bg-white rounded-lg shadow p-4 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Tìm kiếm</label>
+                <input type="text" placeholder="Tên khách hàng..." class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Sân</label>
+                <select id="fieldFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                    <option value="">Tất cả sân</option>
+                    @foreach (var field in Model.AvailableFields)
+                    {
+                        <option value="@field.FieldId">@field.FieldName (@field.FieldType.TypeName)</option>
+                    }
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Ngày</label>
+                <input type="date" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Trạng thái</label>
+                <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                    <option value="">Tất cả</option>
+                    <option value="confirmed">Đã xác nhận</option>
+                    <option value="pending">Chờ xác nhận</option>
+                    <option value="cancelled">Đã hủy</option>
+                    <option value="completed">Hoàn thành</option>
+                </select>
+            </div>
+            <div class="flex items-end">
+                <button class="w-full bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md">
+                    <i data-lucide="search" class="w-4 h-4 inline mr-2"></i>
+                    Tìm kiếm
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bookings Table -->
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mã đặt</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Khách hàng</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sân</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thời gian</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Số phút</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tổng tiền</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    @if (Model.Bookings.Any())
+                    {
+                        @foreach (var booking in Model.Bookings)
+                        {
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">@booking.BookingCode</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div>
+                                        <div class="text-sm font-medium text-gray-900">@booking.CustomerName</div>
+                                        <div class="text-sm text-gray-500">@booking.CustomerPhone</div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">@booking.FieldName</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div>
+                                        <div class="text-sm text-gray-900">@booking.BookingDate.ToString("dd/MM/yyyy")</div>
+                                        <div class="text-sm text-gray-500">@booking.StartTime - @booking.EndTime</div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">@booking.Duration phút</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">@booking.TotalPrice.ToString("N0") ₫</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full @booking.StatusColor">
+                                        @booking.StatusText
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <div class="flex space-x-2">
+                                        <button class="text-blue-600 hover:text-blue-900" onclick="viewBookingDetails(@booking.BookingId)">
+                                            <i data-lucide="eye" class="w-4 h-4"></i>
+                                        </button>
+                                        @if (booking.Status == "Pending")
+                                        {
+                                            <!-- Debug: Booking ID = @booking.BookingId, Type = @booking.BookingId.GetType() -->
+                                            <button class="text-green-600 hover:text-green-900" onclick="confirmBooking(@booking.BookingId)" data-booking-id="@booking.BookingId" title="Booking ID: @booking.BookingId">
+                                                <i data-lucide="check" class="w-4 h-4"></i>
+                                            </button>
+                                            <button class="text-red-600 hover:text-red-900" onclick="cancelBooking(@booking.BookingId)" data-booking-id="@booking.BookingId">
+                                                <i data-lucide="x" class="w-4 h-4"></i>
+                                            </button>
+                                        }
+                                        else if (booking.Status == "Confirmed")
+                                        {
+                                            <button class="text-gray-400 cursor-not-allowed" disabled>
+                                                <i data-lucide="check" class="w-4 h-4"></i>
+                                            </button>
+                                            <button class="text-red-600 hover:text-red-900" onclick="cancelBooking(@booking.BookingId)">
+                                                <i data-lucide="x" class="w-4 h-4"></i>
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <button class="text-gray-400 cursor-not-allowed" disabled>
+                                                <i data-lucide="check" class="w-4 h-4"></i>
+                                            </button>
+                                            <button class="text-gray-400 cursor-not-allowed" disabled>
+                                                <i data-lucide="x" class="w-4 h-4"></i>
+                                            </button>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="8" class="px-6 py-4 text-center text-gray-500">
+                                Không có dữ liệu đặt sân
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+            <div class="flex-1 flex justify-between sm:hidden">
+                <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                    Trước
+                </a>
+                <a href="#" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                    Sau
+                </a>
+            </div>
+            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                <div>
+                    <p class="text-sm text-gray-700">
+                        Hiển thị <span class="font-medium">@((Model.Page - 1) * Model.PageSize + 1)</span> đến <span class="font-medium">@Math.Min(Model.Page * Model.PageSize, Model.TotalCount)</span> của <span class="font-medium">@Model.TotalCount</span> kết quả
+                    </p>
+                </div>
+                <div>
+                    <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                        <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                            <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                        </a>
+                        <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                            1
+                        </a>
+                        <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                            <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                        </a>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Modal Xem Lịch Sân -->
+<div id="scheduleModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-10 mx-auto p-5 border w-11/12 max-w-7xl shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-medium text-gray-900">Lịch đặt sân</h3>
+                <button onclick="closeScheduleModal()" class="text-gray-400 hover:text-gray-600">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            
+            <!-- Date Selector -->
+            <div class="flex items-center justify-between mb-6 bg-gray-50 p-4 rounded-lg">
+                <button onclick="changeScheduleDate(-1)" class="p-2 hover:bg-gray-200 rounded-lg">
+                    <i data-lucide="chevron-left" class="w-5 h-5"></i>
+                </button>
+                <div class="flex items-center space-x-4">
+                    <input type="date" id="scheduleDate" value="" onchange="loadSchedule()" class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <button onclick="setScheduleToday()" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
+                        Hôm nay
+                    </button>
+                </div>
+                <button onclick="changeScheduleDate(1)" class="p-2 hover:bg-gray-200 rounded-lg">
+                    <i data-lucide="chevron-right" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Schedule Grid -->
+            <div class="overflow-x-auto">
+                <div id="scheduleLoading" class="text-center py-8">
+                    <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                    <p class="mt-2 text-gray-600">Đang tải lịch...</p>
+                </div>
+                <div id="scheduleContent" class="hidden">
+                    <table class="min-w-full border-collapse">
+                        <thead>
+                            <tr class="bg-gray-100">
+                                <th class="border border-gray-300 px-4 py-3 text-left font-semibold text-gray-700">Sân</th>
+                                <th class="border border-gray-300 px-2 py-3 text-center font-semibold text-gray-700" colspan="17">Khung giờ (6:00 - 23:00)</th>
+                            </tr>
+                            <tr class="bg-gray-50">
+                                <th class="border border-gray-300 px-4 py-2"></th>
+                                <th class="border border-gray-300 px-2 py-2 text-xs text-gray-600">6h</th>
+                                <th class="border border-gray-300 px-2 py-2 text-xs text-gray-600">7h</th>
+                                <th class="border border-gray-300 px-2 py-2 text-xs text-gray-600">8h</th>
+                                <th class="border border-gray-300 px-2 py-2 text-xs text-gray-600">9h</th>
+                                <th class="border border-gray-300 px-2 py-2 text-xs text-gray-600">10h</th>
+                                <th class="border border-gray-300 px-2 py-2 text-xs text-gray-600">11h</th>
+                                <th class="border border-gray-300 px-2 py-2 text-xs text-gray-600">12h</th>
+                                <th class="border border-gray-300 px-2 py-2 text-xs text-gray-600">13h</th>
+                                <th class="border border-gray-300 px-2 py-2 text-xs text-gray-600">14h</th>
+                                <th class="border border-gray-300 px-2 py-2 text-xs text-gray-600">15h</th>
+                                <th class="border border-gray-300 px-2 py-2 text-xs text-gray-600">16h</th>
+                                <th class="border border-gray-300 px-2 py-2 text-xs text-gray-600">17h</th>
+                                <th class="border border-gray-300 px-2 py-2 text-xs text-gray-600">18h</th>
+                                <th class="border border-gray-300 px-2 py-2 text-xs text-gray-600">19h</th>
+                                <th class="border border-gray-300 px-2 py-2 text-xs text-gray-600">20h</th>
+                                <th class="border border-gray-300 px-2 py-2 text-xs text-gray-600">21h</th>
+                                <th class="border border-gray-300 px-2 py-2 text-xs text-gray-600">22h</th>
+                            </tr>
+                        </thead>
+                        <tbody id="scheduleTableBody">
+                            <!-- Schedule rows will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Legend -->
+            <div class="mt-4 flex items-center justify-center space-x-6 text-sm">
+                <div class="flex items-center space-x-2">
+                    <div class="w-4 h-4 bg-green-200 border border-green-400 rounded"></div>
+                    <span class="text-gray-700">Trống</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div class="w-4 h-4 bg-blue-200 border border-blue-400 rounded"></div>
+                    <span class="text-gray-700">Đã đặt</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div class="w-4 h-4 bg-yellow-200 border border-yellow-400 rounded"></div>
+                    <span class="text-gray-700">Chờ xác nhận</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div class="w-4 h-4 bg-red-200 border border-red-400 rounded"></div>
+                    <span class="text-gray-700">Đang bảo trì</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Thêm Đặt Sân -->
+<div id="bookingModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-10 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-medium text-gray-900">Thêm đặt sân mới</h3>
+                <button onclick="closeBookingModal()" class="text-gray-400 hover:text-gray-600">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            
+            <form id="bookingForm" onsubmit="submitBooking(event)" class="space-y-4">
+                <!-- Customer Type Selection -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Loại khách hàng *</label>
+                    <div class="flex space-x-4">
+                        <label class="flex items-center">
+                            <input type="radio" name="customerType" value="guest" checked onchange="toggleCustomerType()" class="mr-2">
+                            <span>Khách vãng lai</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="radio" name="customerType" value="member" onchange="toggleCustomerType()" class="mr-2">
+                            <span>Thành viên</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Guest Info (default) -->
+                <div id="guestInfo" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Tên khách hàng *</label>
+                        <input type="text" id="guestName" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Nhập tên">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Số điện thoại *</label>
+                        <input type="tel" id="guestPhone" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="0912345678">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                        <input type="email" id="guestEmail" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="email@example.com">
+                    </div>
+                </div>
+
+                <!-- Member Selection (hidden by default) -->
+                <div id="memberInfo" class="hidden">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Chọn thành viên *</label>
+                    <select id="memberSelect" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                        <option value="">Chọn thành viên...</option>
+                        <!-- Will be populated dynamically -->
+                    </select>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Sân *</label>
+                        <select id="fieldSelect" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                            <option value="">Chọn sân</option>
+                            @foreach (var field in Model.AvailableFields)
+                            {
+                                <option value="@field.FieldId" data-opening="@field.OpeningTime" data-closing="@field.ClosingTime">@field.FieldName (@field.FieldType.TypeName)</option>
+                            }
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Ngày đặt *</label>
+                        <input type="date" id="bookingDate" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Giờ bắt đầu *</label>
+                        <input type="time" id="startTime" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" onchange="calculateEndTime()">
+                        <div id="timeRangeHint" class="text-xs text-gray-500 mt-1"></div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Số giờ *</label>
+                        <select id="duration" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" onchange="calculateEndTime()">
+                            <option value="">Chọn số giờ</option>
+                            <option value="60">1 giờ</option>
+                            <option value="90">1.5 giờ</option>
+                            <option value="120">2 giờ</option>
+                            <option value="150">2.5 giờ</option>
+                            <option value="180">3 giờ</option>
+                            <option value="240">4 giờ</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Giờ kết thúc</label>
+                        <input type="time" id="endTime" readonly class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100">
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Trạng thái</label>
+                    <select id="bookingStatus" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                        <option value="Pending">Chờ xác nhận</option>
+                        <option value="Confirmed">Đã xác nhận</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Ghi chú</label>
+                    <textarea id="bookingNotes" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Ghi chú thêm..."></textarea>
+                </div>
+                
+                <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                    <div class="flex items-center space-x-2 text-blue-800 mb-2">
+                        <i data-lucide="info" class="w-4 h-4"></i>
+                        <span class="text-sm font-medium">Giá sẽ được tính tự động dựa trên giờ đặt và quy tắc giá của sân</span>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end space-x-3 pt-4 border-t">
+                    <button type="button" onclick="closeBookingModal()" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+                        Hủy
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 flex items-center space-x-2">
+                        <i data-lucide="check" class="w-4 h-4"></i>
+                        <span>Lưu đặt sân</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .tab-button.active {
+            border-color: #10b981;
+            color: #059669;
+        }
+        .tab-button {
+            transition: all 0.2s ease-in-out;
+        }
+        .tab-button:hover {
+            border-color: #d1d5db;
+            color: #374151;
+        }
+        
+        .tab-button.active {
+            font-weight: 600;
+        }
+        .tab-button.active.border-blue-500 {
+            border-bottom-color: #3b82f6 !important;
+            color: #2563eb !important;
+        }
+        .tab-button.active.border-yellow-500 {
+            border-bottom-color: #eab308 !important;
+            color: #ca8a04 !important;
+        }
+        .tab-button.active.border-green-500 {
+            border-bottom-color: #22c55e !important;
+            color: #16a34a !important;
+        }
+        
+    </style>
+}
+
+@section Scripts {
+    <script>
+        // Wait for DOM to be fully loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            lucide.createIcons();
+            // Set default date for booking
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('bookingDate').value = today;
+            document.getElementById('scheduleDate').value = today;
+            
+            // Initialize with pending tab active by default
+            switchTab('pending');
+        });
+        
+        // Schedule Modal Functions
+        function openScheduleModal() {
+            document.getElementById('scheduleModal').classList.remove('hidden');
+            setScheduleToday();
+            lucide.createIcons();
+        }
+
+        function closeScheduleModal() {
+            document.getElementById('scheduleModal').classList.add('hidden');
+        }
+
+        function setScheduleToday() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('scheduleDate').value = today;
+            loadSchedule();
+        }
+
+        function changeScheduleDate(days) {
+            const dateInput = document.getElementById('scheduleDate');
+            const currentDate = new Date(dateInput.value);
+            currentDate.setDate(currentDate.getDate() + days);
+            dateInput.value = currentDate.toISOString().split('T')[0];
+            loadSchedule();
+        }
+
+        async function loadSchedule() {
+            const date = document.getElementById('scheduleDate').value;
+            const loading = document.getElementById('scheduleLoading');
+            const content = document.getElementById('scheduleContent');
+            
+            loading.classList.remove('hidden');
+            content.classList.add('hidden');
+
+            try {
+                const response = await fetch(`/Admin/GetFieldSchedule?date=${date}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    renderSchedule(data.schedule);
+                    loading.classList.add('hidden');
+                    content.classList.remove('hidden');
+                } else {
+                    alert('Lỗi khi tải lịch: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error loading schedule:', error);
+                alert('Lỗi khi tải lịch sân');
+                loading.classList.add('hidden');
+            }
+        }
+
+        function renderSchedule(schedule) {
+            const tbody = document.getElementById('scheduleTableBody');
+            tbody.innerHTML = '';
+
+            schedule.forEach(field => {
+                const row = document.createElement('tr');
+                
+                // Field name cell
+                const nameCell = document.createElement('td');
+                nameCell.className = 'border border-gray-300 px-4 py-3 font-medium text-gray-900';
+                nameCell.innerHTML = `
+                    <div>${field.fieldName}</div>
+                    <div class="text-xs text-gray-500">${field.fieldType}</div>
+                `;
+                row.appendChild(nameCell);
+
+                // Time slot cells (6:00 - 22:00 = 17 hours)
+                for (let hour = 6; hour < 23; hour++) {
+                    const cell = document.createElement('td');
+                    cell.className = 'border border-gray-300 px-2 py-3 text-center cursor-pointer';
+                    
+                    const slot = field.timeSlots.find(s => s.hour === hour);
+                    
+                    if (slot) {
+                        if (slot.status === 'Confirmed') {
+                            cell.className += ' bg-blue-200 border-blue-400';
+                            cell.title = `${slot.customerName} - ${slot.startTime} đến ${slot.endTime}`;
+                        } else if (slot.status === 'Pending') {
+                            cell.className += ' bg-yellow-200 border-yellow-400';
+                            cell.title = `Chờ xác nhận - ${slot.customerName}`;
+                        } else if (slot.status === 'Maintenance') {
+                            cell.className += ' bg-red-200 border-red-400';
+                            cell.title = 'Đang bảo trì';
+                        }
+                        cell.innerHTML = `<div class="text-xs">${slot.startTime}-${slot.endTime}</div>`;
+                    } else {
+                        cell.className += ' bg-green-200 border-green-400 hover:bg-green-300';
+                        cell.title = 'Trống';
+                    }
+                    
+                    row.appendChild(cell);
+                }
+
+                tbody.appendChild(row);
+            });
+
+            lucide.createIcons();
+        }
+
+        // Booking Modal Functions
+        function openBookingModal() {
+            document.getElementById('bookingModal').classList.remove('hidden');
+            resetBookingForm();
+            lucide.createIcons();
+        }
+
+        function closeBookingModal() {
+            document.getElementById('bookingModal').classList.add('hidden');
+        }
+
+        function resetBookingForm() {
+            document.getElementById('bookingForm').reset();
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('bookingDate').value = today;
+            document.getElementById('guestInfo').classList.remove('hidden');
+            document.getElementById('memberInfo').classList.add('hidden');
+        }
+
+        function toggleCustomerType() {
+            const customerType = document.querySelector('input[name="customerType"]:checked').value;
+            const guestInfo = document.getElementById('guestInfo');
+            const memberInfo = document.getElementById('memberInfo');
+            
+            if (customerType === 'guest') {
+                guestInfo.classList.remove('hidden');
+                memberInfo.classList.add('hidden');
+                // Set required for guest fields
+                document.getElementById('guestName').required = true;
+                document.getElementById('guestPhone').required = true;
+                document.getElementById('memberSelect').required = false;
+            } else {
+                guestInfo.classList.add('hidden');
+                memberInfo.classList.remove('hidden');
+                // Set required for member select
+                document.getElementById('guestName').required = false;
+                document.getElementById('guestPhone').required = false;
+                document.getElementById('memberSelect').required = true;
+            }
+        }
+
+        function calculateEndTime() {
+            const startTimeInput = document.getElementById('startTime');
+            const durationInput = document.getElementById('duration');
+            const endTimeInput = document.getElementById('endTime');
+
+            if (startTimeInput.value && durationInput.value) {
+                const [hours, minutes] = startTimeInput.value.split(':').map(Number);
+                const durationMinutes = parseInt(durationInput.value);
+                
+                const startDate = new Date();
+                startDate.setHours(hours, minutes, 0, 0);
+                
+                const endDate = new Date(startDate.getTime() + durationMinutes * 60000);
+                
+                const endHours = String(endDate.getHours()).padStart(2, '0');
+                const endMinutes = String(endDate.getMinutes()).padStart(2, '0');
+                
+                endTimeInput.value = `${endHours}:${endMinutes}`;
+            }
+        }
+
+        async function submitBooking(event) {
+            event.preventDefault();
+            
+            const customerType = document.querySelector('input[name="customerType"]:checked').value;
+            const fieldId = parseInt(document.getElementById('fieldSelect').value);
+            const bookingDate = document.getElementById('bookingDate').value;
+            const startTime = document.getElementById('startTime').value;
+            const endTime = document.getElementById('endTime').value;
+            const duration = parseInt(document.getElementById('duration').value);
+            const status = document.getElementById('bookingStatus').value;
+            const notes = document.getElementById('bookingNotes').value;
+            
+            // Validate
+            if (!fieldId || !bookingDate || !startTime || !endTime || !duration) {
+                alert('Vui lòng điền đầy đủ thông tin!');
+                return;
+            }
+
+            const bookingData = {
+                fieldId: fieldId,
+                bookingDate: bookingDate,
+                startTime: startTime,
+                endTime: endTime,
+                duration: duration,
+                status: status,
+                notes: notes
+            };
+
+            if (customerType === 'guest') {
+                const guestName = document.getElementById('guestName').value;
+                const guestPhone = document.getElementById('guestPhone').value;
+                const guestEmail = document.getElementById('guestEmail').value;
+                
+                if (!guestName || !guestPhone) {
+                    alert('Vui lòng nhập tên và số điện thoại khách hàng!');
+                    return;
+                }
+                
+                bookingData.guestName = guestName;
+                bookingData.guestPhone = guestPhone;
+                bookingData.guestEmail = guestEmail;
+            } else {
+                const memberId = document.getElementById('memberSelect').value;
+                if (!memberId) {
+                    alert('Vui lòng chọn thành viên!');
+                    return;
+                }
+                bookingData.userId = parseInt(memberId);
+            }
+
+            try {
+                const response = await fetch('/Admin/CreateBooking', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(bookingData)
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('Tạo đặt sân thành công!');
+                    closeBookingModal();
+                    location.reload();
+                } else {
+                    alert('Lỗi: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Lỗi khi tạo đặt sân');
+            }
+        }
+
+        // Update field opening/closing time hint
+        document.addEventListener('DOMContentLoaded', function() {
+            const fieldSelect = document.getElementById('fieldSelect');
+            if (fieldSelect) {
+                fieldSelect.addEventListener('change', function() {
+                    const selectedOption = this.options[this.selectedIndex];
+                    const opening = selectedOption.getAttribute('data-opening');
+                    const closing = selectedOption.getAttribute('data-closing');
+                    const hint = document.getElementById('timeRangeHint');
+                    
+                    if (opening && closing && hint) {
+                        hint.textContent = `Giờ mở: ${opening} - Giờ đóng: ${closing}`;
+                    }
+                });
+            }
+        });
+        
+        function viewBookingDetails(id) {
+            alert('Chi tiết đặt sân ID: ' + id);
+        }
+        
+        // Tab switching functionality
+        function switchTab(tabType) {
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active', 'border-green-500', 'text-green-600', 'border-yellow-500', 'text-yellow-600', 'border-blue-500', 'text-blue-600');
+                btn.classList.add('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+            });
+            
+            const activeTab = document.getElementById(tabType + '-tab');
+            if (activeTab) {
+                activeTab.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+                activeTab.classList.add('active');
+                
+                if (tabType === 'all') {
+                    activeTab.classList.add('border-blue-500', 'text-blue-600');
+                } else if (tabType === 'pending') {
+                    activeTab.classList.add('border-yellow-500', 'text-yellow-600');
+                } else if (tabType === 'processed') {
+                    activeTab.classList.add('border-green-500', 'text-green-600');
+                }
+            }
+            
+            // Update page title
+            const pageTitle = document.getElementById('page-title');
+            if (pageTitle) {
+                switch(tabType) {
+                    case 'all':
+                        pageTitle.textContent = 'Tất cả phiếu đặt';
+                        break;
+                    case 'pending':
+                        pageTitle.textContent = 'Đang chờ xử lý';
+                        break;
+                    case 'processed':
+                        pageTitle.textContent = 'Đã xử lý';
+                        break;
+                }
+            }
+            
+            filterTableByTab(tabType);
+        }
+        
+        function filterTableByTab(tabType) {
+            const rows = document.querySelectorAll('tbody tr');
+            
+            rows.forEach(row => {
+                const statusCell = row.querySelector('td:nth-child(7) span');
+                if (!statusCell) return;
+                
+                const statusText = statusCell.textContent.trim();
+                let shouldShow = false;
+                
+                switch(tabType) {
+                    case 'all':
+                        shouldShow = true;
+                        break;
+                    case 'pending':
+                        shouldShow = statusText === 'Chờ xác nhận';
+                        break;
+                    case 'processed':
+                        shouldShow = statusText === 'Đã xác nhận' || statusText === 'Đã hủy' || statusText === 'Hoàn thành';
+                        break;
+                }
+                
+                if (shouldShow) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+        
+        function confirmBooking(id) {
+            if (confirm('Bạn có chắc chắn muốn xác nhận đặt sân này?')) {
+                fetch(`/Admin/ConfirmBooking`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ id: id })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Đã xác nhận đặt sân thành công!');
+                        location.reload();
+                    } else {
+                        alert('Lỗi khi xác nhận đặt sân: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Lỗi khi xác nhận đặt sân');
+                });
+            }
+        }
+
+        function cancelBooking(id) {
+            const reason = prompt('Nhập lý do hủy đặt sân (không bắt buộc):');
+            if (reason !== null) {
+                fetch(`/Admin/CancelBooking/${id}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ reason: reason })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Đã hủy đặt sân thành công!');
+                        location.reload();
+                    } else {
+                        alert('Lỗi khi hủy đặt sân: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Lỗi khi hủy đặt sân');
+                });
+            }
+        }
+    </script>
+}
+

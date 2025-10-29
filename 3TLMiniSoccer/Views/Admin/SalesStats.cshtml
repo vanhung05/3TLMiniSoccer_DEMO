@@ -1,0 +1,457 @@
+@model _3TLMiniSoccer.ViewModels.SalesStatsViewModel
+@{
+    ViewData["Title"] = "Thống kê bán hàng";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="flex-1 overflow-y-auto p-6 bg-gray-50">
+    <!-- Header Actions -->
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">Thống kê bán hàng</h1>
+        <div class="flex space-x-2">
+            <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+                <i data-lucide="download" class="w-4 h-4"></i>
+                <span>Xuất báo cáo</span>
+            </button>
+            <button class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+                <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                <span>Làm mới</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Date Range Filter -->
+    <div class="bg-white rounded-lg shadow p-4 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Từ ngày</label>
+                <input type="date" id="fromDate" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" value="@Model.FromDate.ToString("yyyy-MM-dd")">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Đến ngày</label>
+                <input type="date" id="toDate" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" value="@Model.ToDate.ToString("yyyy-MM-dd")">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Loại báo cáo</label>
+                <select id="reportType" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                    <option value="daily" selected="@(Model.ReportType == "daily")">Theo ngày</option>
+                    <option value="weekly" selected="@(Model.ReportType == "weekly")">Theo tuần</option>
+                    <option value="monthly" selected="@(Model.ReportType == "monthly")">Theo tháng</option>
+                    <option value="yearly" selected="@(Model.ReportType == "yearly")">Theo năm</option>
+                </select>
+            </div>
+            <div class="flex items-end">
+                <button id="filterButton" class="w-full bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md">
+                    <i data-lucide="search" class="w-4 h-4 inline mr-2"></i>
+                    Xem báo cáo
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-blue-100 text-blue-500">
+                    <i data-lucide="shopping-cart" class="w-6 h-6"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm text-gray-500">Tổng đơn hàng</p>
+                    <p class="text-2xl font-bold" id="totalOrders">@Model.Summary.TotalOrders</p>
+                    <p class="text-xs text-green-600" id="orderGrowth">+@Model.Comparison.OrderGrowthPercentage.ToString("F1")% so với kỳ trước</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-green-100 text-green-500">
+                    <i data-lucide="dollar-sign" class="w-6 h-6"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm text-gray-500">Doanh thu</p>
+                    <p class="text-2xl font-bold" id="totalRevenue">@((Model.Summary.TotalRevenue / 1000000).ToString("F1"))M ₫</p>
+                    <p class="text-xs text-green-600" id="revenueGrowth">+@Model.Comparison.RevenueGrowthPercentage.ToString("F1")% so với kỳ trước</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-yellow-100 text-yellow-500">
+                    <i data-lucide="package" class="w-6 h-6"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm text-gray-500">Sản phẩm bán</p>
+                    <p class="text-2xl font-bold" id="totalProducts">@Model.Summary.TotalProductsSold</p>
+                    <p class="text-xs text-green-600" id="productGrowth">+@Model.Comparison.ProductGrowthPercentage.ToString("F1")% so với kỳ trước</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-purple-100 text-purple-500">
+                    <i data-lucide="trending-up" class="w-6 h-6"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm text-gray-500">Tỷ lệ tăng trưởng</p>
+                    <p class="text-2xl font-bold" id="growthRate">@Model.Summary.GrowthRate.ToString("F1")%</p>
+                    <p class="text-xs text-green-600">Tăng so với kỳ trước</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <!-- Sales Revenue Chart -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold mb-4">Doanh thu bán hàng theo ngày</h3>
+            <canvas id="salesRevenueChart" width="400" height="200"></canvas>
+        </div>
+        
+        <!-- Product Sales Chart -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold mb-4">Số lượng sản phẩm bán theo ngày</h3>
+            <canvas id="productSalesChart" width="400" height="200"></canvas>
+        </div>
+    </div>
+
+    <!-- Product Performance Chart -->
+    <div class="bg-white rounded-lg shadow p-6 mb-6">
+        <h3 class="text-lg font-semibold mb-4">Hiệu suất sản phẩm</h3>
+        <canvas id="productPerformanceChart" width="800" height="300"></canvas>
+    </div>
+
+    <!-- Top Tables -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <!-- Top Selling Products -->
+        <div class="bg-white rounded-lg shadow overflow-hidden">
+            <div class="p-4 border-b">
+                <h3 class="font-semibold text-lg">Top 5 sản phẩm bán chạy</h3>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sản phẩm</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Số lượng bán</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Doanh thu</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200" id="topSellingProductsTable">
+                        @foreach (var product in Model.TopSellingProducts)
+                        {
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">@product.Rank</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">@product.ProductName</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">@product.QuantitySold</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">@product.Revenue.ToString("N0") ₫</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Top Customers -->
+        <div class="bg-white rounded-lg shadow overflow-hidden">
+            <div class="p-4 border-b">
+                <h3 class="font-semibold text-lg">Top 5 khách hàng mua nhiều</h3>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Khách hàng</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Số đơn</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tổng chi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200" id="topCustomersTable">
+                        @foreach (var customer in Model.TopCustomers)
+                        {
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">@customer.Rank</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">@customer.CustomerName</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">@customer.OrderCount</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">@customer.TotalSpent.ToString("N0") ₫</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Category Analysis -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-lg font-semibold mb-4">Phân tích theo danh mục</h3>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6" id="categoryAnalysis">
+            @{
+                var colors = new[] { "blue", "green", "yellow", "purple" };
+                var index = 0;
+            }
+            @foreach (var category in Model.CategoryAnalysis.Take(4))
+            {
+                <div class="text-center">
+                    <div class="text-3xl font-bold text-@colors[index]-600 mb-2">@category.Percentage.ToString("F0")%</div>
+                    <div class="text-sm text-gray-600">@category.CategoryName</div>
+                    <div class="text-xs text-gray-500">@category.Description</div>
+                </div>
+                index++;
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+        
+        // Global variables for charts
+        let salesRevenueChart, productSalesChart, productPerformanceChart;
+        
+        // Initialize Charts with real data
+        function initializeCharts() {
+            // Sales Revenue Chart
+            const salesRevenueCtx = document.getElementById('salesRevenueChart').getContext('2d');
+            const salesRevenueLabels = @Html.Raw(Json.Serialize(Model.SalesRevenueChartData.Select(x => x.Label)));
+            const salesRevenueData = @Html.Raw(Json.Serialize(Model.SalesRevenueChartData.Select(x => x.Revenue)));
+            
+            salesRevenueChart = new Chart(salesRevenueCtx, {
+                type: 'line',
+                data: {
+                    labels: salesRevenueLabels,
+                    datasets: [{
+                        label: 'Doanh thu bán hàng (₫)',
+                        data: salesRevenueData,
+                        borderColor: 'rgb(34, 197, 94)',
+                        backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return (value / 1000000).toFixed(1) + 'M';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Product Sales Chart
+            const productSalesCtx = document.getElementById('productSalesChart').getContext('2d');
+            const productSalesLabels = @Html.Raw(Json.Serialize(Model.ProductSalesChartData.Select(x => x.Label)));
+            const productSalesData = @Html.Raw(Json.Serialize(Model.ProductSalesChartData.Select(x => x.QuantitySold)));
+            
+            productSalesChart = new Chart(productSalesCtx, {
+                type: 'bar',
+                data: {
+                    labels: productSalesLabels,
+                    datasets: [{
+                        label: 'Số sản phẩm bán',
+                        data: productSalesData,
+                        backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                        borderColor: 'rgb(59, 130, 246)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Product Performance Chart
+            const productPerformanceCtx = document.getElementById('productPerformanceChart').getContext('2d');
+            const categoryLabels = @Html.Raw(Json.Serialize(Model.CategoryAnalysis.Select(x => x.CategoryName)));
+            const categoryData = @Html.Raw(Json.Serialize(Model.CategoryAnalysis.Select(x => x.Percentage)));
+            
+            productPerformanceChart = new Chart(productPerformanceCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: categoryLabels,
+                    datasets: [{
+                        data: categoryData,
+                        backgroundColor: [
+                            'rgba(34, 197, 94, 0.8)',
+                            'rgba(59, 130, 246, 0.8)',
+                            'rgba(245, 158, 11, 0.8)',
+                            'rgba(168, 85, 247, 0.8)',
+                            'rgba(239, 68, 68, 0.8)',
+                            'rgba(107, 114, 128, 0.8)'
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Filter button click handler
+        document.getElementById('filterButton').addEventListener('click', function() {
+            const fromDate = document.getElementById('fromDate').value;
+            const toDate = document.getElementById('toDate').value;
+            const reportType = document.getElementById('reportType').value;
+            
+            // Show loading state
+            this.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 inline mr-2 animate-spin"></i>Đang tải...';
+            this.disabled = true;
+            
+            // Fetch new data
+            fetch('/Admin/GetSalesStatsData', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    fromDate: fromDate,
+                    toDate: toDate,
+                    reportType: reportType
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    updateDashboard(data.data);
+                } else {
+                    alert('Có lỗi xảy ra: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi tải dữ liệu');
+            })
+            .finally(() => {
+                // Reset button state
+                this.innerHTML = '<i data-lucide="search" class="w-4 h-4 inline mr-2"></i>Xem báo cáo';
+                this.disabled = false;
+                lucide.createIcons();
+            });
+        });
+        
+        // Update dashboard with new data
+        function updateDashboard(data) {
+            // Update summary cards
+            document.getElementById('totalOrders').textContent = data.summary.totalOrders;
+            document.getElementById('totalRevenue').textContent = (data.summary.totalRevenue / 1000000).toFixed(1) + 'M ₫';
+            document.getElementById('totalProducts').textContent = data.summary.totalProductsSold;
+            document.getElementById('growthRate').textContent = data.summary.growthRate.toFixed(1) + '%';
+            
+            // Update growth percentages
+            document.getElementById('orderGrowth').textContent = '+' + data.comparison.orderGrowthPercentage.toFixed(1) + '% so với kỳ trước';
+            document.getElementById('revenueGrowth').textContent = '+' + data.comparison.revenueGrowthPercentage.toFixed(1) + '% so với kỳ trước';
+            document.getElementById('productGrowth').textContent = '+' + data.comparison.productGrowthPercentage.toFixed(1) + '% so với kỳ trước';
+            
+            // Update charts
+            salesRevenueChart.data.labels = data.salesRevenueChartData.map(x => x.label);
+            salesRevenueChart.data.datasets[0].data = data.salesRevenueChartData.map(x => x.revenue);
+            salesRevenueChart.update();
+            
+            productSalesChart.data.labels = data.productSalesChartData.map(x => x.label);
+            productSalesChart.data.datasets[0].data = data.productSalesChartData.map(x => x.quantitySold);
+            productSalesChart.update();
+            
+            productPerformanceChart.data.labels = data.categoryAnalysis.map(x => x.categoryName);
+            productPerformanceChart.data.datasets[0].data = data.categoryAnalysis.map(x => x.percentage);
+            productPerformanceChart.update();
+            
+            // Update tables
+            updateTopSellingProductsTable(data.topSellingProducts);
+            updateTopCustomersTable(data.topCustomers);
+            updateCategoryAnalysis(data.categoryAnalysis);
+        }
+        
+        // Update top selling products table
+        function updateTopSellingProductsTable(products) {
+            const tbody = document.getElementById('topSellingProductsTable');
+            tbody.innerHTML = '';
+            
+            products.forEach(product => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${product.rank}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${product.productName}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${product.quantitySold}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">${product.revenue.toLocaleString()} ₫</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+        
+        // Update top customers table
+        function updateTopCustomersTable(customers) {
+            const tbody = document.getElementById('topCustomersTable');
+            tbody.innerHTML = '';
+            
+            customers.forEach(customer => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${customer.rank}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${customer.customerName}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${customer.orderCount}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">${customer.totalSpent.toLocaleString()} ₫</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+        
+        // Update category analysis
+        function updateCategoryAnalysis(categories) {
+            const container = document.getElementById('categoryAnalysis');
+            const colors = ['blue', 'green', 'yellow', 'purple'];
+            
+            container.innerHTML = '';
+            
+            categories.slice(0, 4).forEach((category, index) => {
+                const div = document.createElement('div');
+                div.className = 'text-center';
+                div.innerHTML = `
+                    <div class="text-3xl font-bold text-${colors[index]}-600 mb-2">${category.percentage.toFixed(0)}%</div>
+                    <div class="text-sm text-gray-600">${category.categoryName}</div>
+                    <div class="text-xs text-gray-500">${category.description}</div>
+                `;
+                container.appendChild(div);
+            });
+        }
+        
+        // Initialize charts on page load
+        initializeCharts();
+    </script>
+}

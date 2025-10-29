@@ -1,0 +1,491 @@
+@{
+    ViewData["Title"] = "Thống kê đặt sân";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="flex-1 overflow-y-auto p-6 bg-gray-50">
+    <!-- Header Actions -->
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">Thống kê đặt sân</h1>
+        <div class="flex space-x-2">
+            <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+                <i data-lucide="download" class="w-4 h-4"></i>
+                <span>Xuất báo cáo</span>
+            </button>
+            <button class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+                <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                <span>Làm mới</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Date Range Filter -->
+    <div class="bg-white rounded-lg shadow p-4 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Từ ngày</label>
+                <input type="date" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" value="2024-01-01">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Đến ngày</label>
+                <input type="date" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" value="2024-01-31">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Loại báo cáo</label>
+                <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                    <option value="daily">Theo ngày</option>
+                    <option value="weekly">Theo tuần</option>
+                    <option value="monthly">Theo tháng</option>
+                    <option value="yearly">Theo năm</option>
+                </select>
+            </div>
+            <div class="flex items-end">
+                <button id="filterButton" class="w-full bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md">
+                    <i data-lucide="search" class="w-4 h-4 inline mr-2"></i>
+                    Xem báo cáo
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-blue-100 text-blue-500">
+                    <i data-lucide="calendar-check" class="w-6 h-6"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm text-gray-500">Tổng đặt sân</p>
+                    <p class="text-2xl font-bold" id="totalBookings">@Model.Summary.TotalBookings</p>
+                    <p class="text-xs text-green-600" id="bookingGrowth">+@Model.Comparison.BookingGrowthRate.ToString("F1")% so với kỳ trước</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-green-100 text-green-500">
+                    <i data-lucide="dollar-sign" class="w-6 h-6"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm text-gray-500">Doanh thu</p>
+                    <p class="text-2xl font-bold" id="totalRevenue">@((Model.Summary.TotalRevenue / 1000000).ToString("F1"))M ₫</p>
+                    <p class="text-xs text-green-600" id="revenueGrowth">+@Model.Comparison.RevenueGrowthRate.ToString("F1")% so với kỳ trước</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-yellow-100 text-yellow-500">
+                    <i data-lucide="users" class="w-6 h-6"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm text-gray-500">Khách hàng mới</p>
+                    <p class="text-2xl font-bold" id="newCustomers">@Model.Summary.NewCustomers</p>
+                    <p class="text-xs text-green-600" id="customerGrowth">+@Model.Comparison.CustomerGrowthRate.ToString("F1")% so với kỳ trước</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-purple-100 text-purple-500">
+                    <i data-lucide="trending-up" class="w-6 h-6"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm text-gray-500">Tỷ lệ tăng trưởng</p>
+                    <p class="text-2xl font-bold" id="growthRate">@Model.Summary.GrowthRate.ToString("F1")%</p>
+                    <p class="text-xs text-green-600" id="growthText">Tăng so với kỳ trước</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <!-- Revenue Chart -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold mb-4">Doanh thu theo ngày</h3>
+            <canvas id="revenueChart" width="400" height="200"></canvas>
+        </div>
+        
+        <!-- Booking Chart -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold mb-4">Số lượng đặt sân theo ngày</h3>
+            <canvas id="bookingChart" width="400" height="200"></canvas>
+        </div>
+    </div>
+
+    <!-- Field Performance Chart -->
+    <div class="bg-white rounded-lg shadow p-6 mb-6">
+        <h3 class="text-lg font-semibold mb-4">Hiệu suất sân bóng</h3>
+        <div class="flex justify-center">
+            <div class="w-80 h-80">
+                <canvas id="fieldPerformanceChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Tables -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <!-- Top Customers -->
+        <div class="bg-white rounded-lg shadow overflow-hidden">
+            <div class="p-4 border-b">
+                <h3 class="font-semibold text-lg">Top 5 khách hàng</h3>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Khách hàng</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Số lần đặt</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tổng chi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200" id="topCustomersTable">
+                        @for (int i = 0; i < Model.TopCustomers.Count; i++)
+                        {
+                            var customer = Model.TopCustomers[i];
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">@(i + 1)</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">@customer.CustomerName</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">@customer.BookingCount</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">@customer.Revenue.ToString("N0") ₫</td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Top Fields -->
+        <div class="bg-white rounded-lg shadow overflow-hidden">
+            <div class="p-4 border-b">
+                <h3 class="font-semibold text-lg">Top 5 sân bóng</h3>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tên sân</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Số lần đặt</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Doanh thu</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200" id="topFieldsTable">
+                        @for (int i = 0; i < Model.TopFields.Count; i++)
+                        {
+                            var field = Model.TopFields[i];
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">@(i + 1)</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">@field.FieldName (@field.FieldType)</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">@field.BookingCount</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">@field.Revenue.ToString("N0") ₫</td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Time Analysis -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-lg font-semibold mb-4">Phân tích theo khung giờ</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="text-center">
+                <div class="text-3xl font-bold text-blue-600 mb-2" id="eveningPercentage">@Model.TimeAnalysis.EveningPercentage.ToString("F0")%</div>
+                <div class="text-sm text-gray-600">Buổi tối (18h-23h)</div>
+                <div class="text-xs text-gray-500">@Model.TimeAnalysis.EveningBookings đặt sân</div>
+            </div>
+            <div class="text-center">
+                <div class="text-3xl font-bold text-green-600 mb-2" id="afternoonPercentage">@Model.TimeAnalysis.AfternoonPercentage.ToString("F0")%</div>
+                <div class="text-sm text-gray-600">Buổi chiều (12h-18h)</div>
+                <div class="text-xs text-gray-500">@Model.TimeAnalysis.AfternoonBookings đặt sân</div>
+            </div>
+            <div class="text-center">
+                <div class="text-3xl font-bold text-yellow-600 mb-2" id="morningPercentage">@Model.TimeAnalysis.MorningPercentage.ToString("F0")%</div>
+                <div class="text-sm text-gray-600">Buổi sáng (6h-12h)</div>
+                <div class="text-xs text-gray-500">@Model.TimeAnalysis.MorningBookings đặt sân</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+        
+        let revenueChart, bookingChart, fieldPerformanceChart;
+
+        // Initialize Charts with real data
+        function initializeCharts() {
+            // Get data from server - using real data from Model
+            @{
+                var revenueLabels = new List<string>();
+                var revenueData = new List<decimal>();
+                var bookingLabels = new List<string>();
+                var bookingData = new List<int>();
+                var fieldLabels = new List<string>();
+                var fieldData = new List<int>();
+                
+                foreach (var item in Model.RevenueChartData)
+                {
+                    revenueLabels.Add(item.Label);
+                    revenueData.Add(item.Revenue);
+                }
+                
+                foreach (var item in Model.BookingChartData)
+                {
+                    bookingLabels.Add(item.Label);
+                    bookingData.Add(item.BookingCount);
+                }
+                
+                foreach (var item in Model.FieldPerformance)
+                {
+                    fieldLabels.Add(item.FieldName);
+                    fieldData.Add(item.BookingCount);
+                }
+            }
+            const revenueLabels = @Html.Raw(Json.Serialize(revenueLabels));
+            const revenueData = @Html.Raw(Json.Serialize(revenueData));
+            const bookingLabels = @Html.Raw(Json.Serialize(bookingLabels));
+            const bookingData = @Html.Raw(Json.Serialize(bookingData));
+            const fieldLabels = @Html.Raw(Json.Serialize(fieldLabels));
+            const fieldData = @Html.Raw(Json.Serialize(fieldData));
+
+        // Revenue Chart
+        const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+            if (revenueChart) revenueChart.destroy();
+            revenueChart = new Chart(revenueCtx, {
+            type: 'line',
+            data: {
+                    labels: revenueLabels,
+                datasets: [{
+                    label: 'Doanh thu (₫)',
+                        data: revenueData,
+                    borderColor: 'rgb(34, 197, 94)',
+                    backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return (value / 1000000).toFixed(1) + 'M';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Booking Chart
+        const bookingCtx = document.getElementById('bookingChart').getContext('2d');
+            if (bookingChart) bookingChart.destroy();
+            bookingChart = new Chart(bookingCtx, {
+            type: 'bar',
+            data: {
+                    labels: bookingLabels,
+                datasets: [{
+                    label: 'Số đặt sân',
+                        data: bookingData,
+                    backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                    borderColor: 'rgb(59, 130, 246)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Field Performance Chart
+        const fieldPerformanceCtx = document.getElementById('fieldPerformanceChart').getContext('2d');
+            if (fieldPerformanceChart) fieldPerformanceChart.destroy();
+            fieldPerformanceChart = new Chart(fieldPerformanceCtx, {
+            type: 'doughnut',
+            data: {
+                    labels: fieldLabels,
+                datasets: [{
+                        data: fieldData,
+                    backgroundColor: [
+                        'rgba(34, 197, 94, 0.8)',
+                        'rgba(59, 130, 246, 0.8)',
+                        'rgba(245, 158, 11, 0.8)',
+                        'rgba(168, 85, 247, 0.8)',
+                        'rgba(239, 68, 68, 0.8)',
+                        'rgba(107, 114, 128, 0.8)'
+                    ],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                    maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                            position: 'bottom',
+                            labels: {
+                                boxWidth: 12,
+                                padding: 10,
+                                font: {
+                                    size: 11
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.parsed || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return `${label}: ${value} đặt sân (${percentage}%)`;
+                                }
+                            }
+                        }
+                    },
+                    cutout: '60%'
+                }
+            });
+        }
+
+        // Initialize charts on page load
+        initializeCharts();
+
+        // Filter functionality
+        document.getElementById('filterButton').addEventListener('click', function() {
+            const fromDate = document.getElementById('fromDate').value;
+            const toDate = document.getElementById('toDate').value;
+            const reportType = document.getElementById('reportType').value;
+
+            if (!fromDate || !toDate) {
+                alert('Vui lòng chọn khoảng thời gian');
+                return;
+            }
+
+            // Show loading
+            this.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 inline mr-2 animate-spin"></i>Đang tải...';
+            this.disabled = true;
+
+            fetch('/Admin/GetBookingStatsData', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    fromDate: fromDate,
+                    toDate: toDate,
+                    reportType: reportType
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    updateDashboard(data.data);
+                } else {
+                    alert('Lỗi: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi tải dữ liệu');
+            })
+            .finally(() => {
+                // Reset button
+                this.innerHTML = '<i data-lucide="search" class="w-4 h-4 inline mr-2"></i>Xem báo cáo';
+                this.disabled = false;
+                lucide.createIcons();
+            });
+        });
+
+        function updateDashboard(data) {
+            // Update summary cards
+            document.getElementById('totalBookings').textContent = data.summary.totalBookings;
+            document.getElementById('totalRevenue').textContent = (data.summary.totalRevenue / 1000000).toFixed(1) + 'M ₫';
+            document.getElementById('newCustomers').textContent = data.summary.newCustomers;
+            document.getElementById('growthRate').textContent = data.summary.growthRate.toFixed(1) + '%';
+            document.getElementById('bookingGrowth').textContent = '+' + data.comparison.bookingGrowthRate.toFixed(1) + '% so với kỳ trước';
+            document.getElementById('revenueGrowth').textContent = '+' + data.comparison.revenueGrowthRate.toFixed(1) + '% so với kỳ trước';
+            document.getElementById('customerGrowth').textContent = '+' + data.comparison.customerGrowthRate.toFixed(1) + '% so với kỳ trước';
+
+            // Update charts
+            revenueChart.data.labels = data.revenueChartData.map(x => x.label);
+            revenueChart.data.datasets[0].data = data.revenueChartData.map(x => x.revenue);
+            revenueChart.update();
+
+            bookingChart.data.labels = data.bookingChartData.map(x => x.label);
+            bookingChart.data.datasets[0].data = data.bookingChartData.map(x => x.bookingCount);
+            bookingChart.update();
+
+            fieldPerformanceChart.data.labels = data.fieldPerformance.map(x => x.fieldName);
+            fieldPerformanceChart.data.datasets[0].data = data.fieldPerformance.map(x => x.bookingCount);
+            fieldPerformanceChart.update();
+
+            // Update tables
+            updateTopCustomersTable(data.topCustomers);
+            updateTopFieldsTable(data.topFields);
+
+            // Update time analysis
+            document.getElementById('eveningPercentage').textContent = data.timeAnalysis.eveningPercentage.toFixed(0) + '%';
+            document.getElementById('afternoonPercentage').textContent = data.timeAnalysis.afternoonPercentage.toFixed(0) + '%';
+            document.getElementById('morningPercentage').textContent = data.timeAnalysis.morningPercentage.toFixed(0) + '%';
+        }
+
+        function updateTopCustomersTable(customers) {
+            const tbody = document.getElementById('topCustomersTable');
+            tbody.innerHTML = '';
+            customers.forEach((customer, index) => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${index + 1}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${customer.customerName}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${customer.bookingCount}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">${customer.totalSpent.toLocaleString()} ₫</td>
+                `;
+            });
+        }
+
+        function updateTopFieldsTable(fields) {
+            const tbody = document.getElementById('topFieldsTable');
+            tbody.innerHTML = '';
+            fields.forEach((field, index) => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${index + 1}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${field.fieldName} (${field.fieldType})</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${field.bookingCount}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">${field.revenue.toLocaleString()} ₫</td>
+                `;
+            });
+        }
+    </script>
+}

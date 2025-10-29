@@ -1,0 +1,500 @@
+@{
+    ViewData["Title"] = "Quản lý đặt sân";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<h1 class="text-2xl font-bold text-gray-800 mb-6">Quản lý đặt sân</h1>
+
+<!-- Quick Stats -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+  <!-- Total Bookings -->
+  <div class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow">
+    <div class="flex items-center">
+      <div class="p-3 rounded-full bg-blue-100 text-blue-500">
+        <i data-lucide="calendar" class="w-6 h-6"></i>
+      </div>
+      <div class="ml-4">
+        <p class="text-sm text-gray-500">Tổng số đặt sân</p>
+        <p class="text-2xl font-bold">1,456</p>
+        <p class="text-xs text-gray-400">Tất cả</p>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Today's Bookings -->
+  <div class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow">
+    <div class="flex items-center">
+      <div class="p-3 rounded-full bg-green-100 text-green-500">
+        <i data-lucide="calendar-check" class="w-6 h-6"></i>
+      </div>
+      <div class="ml-4">
+        <p class="text-sm text-gray-500">Đặt sân hôm nay</p>
+        <p class="text-2xl font-bold">15</p>
+        <p class="text-xs text-gray-400">Hôm nay</p>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Pending Bookings -->
+  <div class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow">
+    <div class="flex items-center">
+      <div class="p-3 rounded-full bg-yellow-100 text-yellow-500">
+        <i data-lucide="clock" class="w-6 h-6"></i>
+      </div>
+      <div class="ml-4">
+        <p class="text-sm text-gray-500">Chờ xác nhận</p>
+        <p class="text-2xl font-bold">8</p>
+        <p class="text-xs text-gray-400">Đang chờ</p>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Revenue Today -->
+  <div class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow">
+    <div class="flex items-center">
+      <div class="p-3 rounded-full bg-purple-100 text-purple-500">
+        <i data-lucide="dollar-sign" class="w-6 h-6"></i>
+      </div>
+      <div class="ml-4">
+        <p class="text-sm text-gray-500">Doanh thu hôm nay</p>
+        <p class="text-2xl font-bold">5.250.000 ₫</p>
+        <p class="text-xs text-gray-400">Hôm nay</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Filters -->
+<div class="bg-white rounded-lg shadow p-6 mb-6">
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">Tìm kiếm theo khách hàng</label>
+      <input type="text" placeholder="Nhập tên khách hàng..." class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">Chọn sân</label>
+      <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+        <option value="">Tất cả sân</option>
+        <option value="field1">Sân A (5 người)</option>
+        <option value="field2">Sân B (7 người)</option>
+        <option value="field3">Sân C (5 người)</option>
+        <option value="field4">Sân D (7 người)</option>
+      </select>
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">Chọn ngày</label>
+      <input type="date" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">Trạng thái</label>
+      <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+        <option value="">Tất cả trạng thái</option>
+        <option value="pending">Chờ xác nhận</option>
+        <option value="confirmed">Đã xác nhận</option>
+        <option value="completed">Hoàn thành</option>
+        <option value="cancelled">Đã hủy</option>
+      </select>
+    </div>
+  </div>
+  <div class="mt-4 flex justify-end space-x-2">
+    <button class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors">
+      <i data-lucide="x" class="w-4 h-4 inline mr-2"></i>
+      Xóa bộ lọc
+    </button>
+    <button class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors">
+      <i data-lucide="search" class="w-4 h-4 inline mr-2"></i>
+      Tìm kiếm
+    </button>
+  </div>
+</div>
+
+<!-- Bookings Table -->
+<div class="bg-white rounded-lg shadow overflow-hidden">
+  <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+    <h3 class="text-lg font-semibold text-gray-800">Danh sách đặt sân</h3>
+    <button class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors" onclick="openAddBookingModal()">
+      <i data-lucide="plus" class="w-4 h-4 inline mr-2"></i>
+      Thêm đặt sân
+    </button>
+  </div>
+  
+  <div class="overflow-x-auto">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <input type="checkbox" class="rounded border-gray-300 text-green-600 focus:ring-green-500">
+          </th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mã đặt sân</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Khách hàng</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sân</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thời gian</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thời lượng</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tổng tiền</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thao tác</th>
+        </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200">
+        <tr class="hover:bg-gray-50">
+          <td class="px-6 py-4 whitespace-nowrap">
+            <input type="checkbox" class="rounded border-gray-300 text-green-600 focus:ring-green-500">
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#BK001</td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="flex items-center">
+              <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mr-3">
+                <i data-lucide="user" class="w-5 h-5 text-gray-500"></i>
+              </div>
+              <div>
+                <div class="text-sm font-medium text-gray-900">Nguyễn Văn A</div>
+                <div class="text-sm text-gray-500">0912xxx123</div>
+              </div>
+            </div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Sân A (5 người)</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+            <div>25/01/2024</div>
+            <div class="text-xs text-gray-400">18:00 - 20:00</div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2 giờ</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">700.000 ₫</td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Hoàn thành</span>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+            <div class="flex space-x-2">
+              <button class="text-blue-600 hover:text-blue-900" onclick="editBooking('BK001')">
+                <i data-lucide="edit" class="w-4 h-4"></i>
+              </button>
+              <button class="text-red-600 hover:text-red-900" onclick="deleteBooking('BK001')">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+        <tr class="hover:bg-gray-50">
+          <td class="px-6 py-4 whitespace-nowrap">
+            <input type="checkbox" class="rounded border-gray-300 text-green-600 focus:ring-green-500">
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#BK002</td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="flex items-center">
+              <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mr-3">
+                <i data-lucide="user" class="w-5 h-5 text-gray-500"></i>
+              </div>
+              <div>
+                <div class="text-sm font-medium text-gray-900">Trần Thị B</div>
+                <div class="text-sm text-gray-500">0987xxx456</div>
+              </div>
+            </div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Sân B (7 người)</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+            <div>25/01/2024</div>
+            <div class="text-xs text-gray-400">20:00 - 22:00</div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2 giờ</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">900.000 ₫</td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">Chờ xác nhận</span>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+            <div class="flex space-x-2">
+              <button class="text-green-600 hover:text-green-900" onclick="confirmBooking('BK002')">
+                <i data-lucide="check" class="w-4 h-4"></i>
+              </button>
+              <button class="text-blue-600 hover:text-blue-900" onclick="editBooking('BK002')">
+                <i data-lucide="edit" class="w-4 h-4"></i>
+              </button>
+              <button class="text-red-600 hover:text-red-900" onclick="deleteBooking('BK002')">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+        <tr class="hover:bg-gray-50">
+          <td class="px-6 py-4 whitespace-nowrap">
+            <input type="checkbox" class="rounded border-gray-300 text-green-600 focus:ring-green-500">
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#BK003</td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="flex items-center">
+              <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mr-3">
+                <i data-lucide="user" class="w-5 h-5 text-gray-500"></i>
+              </div>
+              <div>
+                <div class="text-sm font-medium text-gray-900">Lê Văn C</div>
+                <div class="text-sm text-gray-500">0903xxx789</div>
+              </div>
+            </div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Sân C (5 người)</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+            <div>26/01/2024</div>
+            <div class="text-xs text-gray-400">16:00 - 18:00</div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2 giờ</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">600.000 ₫</td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">Đã xác nhận</span>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+            <div class="flex space-x-2">
+              <button class="text-blue-600 hover:text-blue-900" onclick="editBooking('BK003')">
+                <i data-lucide="edit" class="w-4 h-4"></i>
+              </button>
+              <button class="text-red-600 hover:text-red-900" onclick="deleteBooking('BK003')">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+        <tr class="hover:bg-gray-50">
+          <td class="px-6 py-4 whitespace-nowrap">
+            <input type="checkbox" class="rounded border-gray-300 text-green-600 focus:ring-green-500">
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#BK004</td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="flex items-center">
+              <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mr-3">
+                <i data-lucide="user" class="w-5 h-5 text-gray-500"></i>
+              </div>
+              <div>
+                <div class="text-sm font-medium text-gray-900">Phạm Thị D</div>
+                <div class="text-sm text-gray-500">0978xxx012</div>
+              </div>
+            </div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Sân D (7 người)</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+            <div>26/01/2024</div>
+            <div class="text-xs text-gray-400">14:00 - 16:00</div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2 giờ</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">900.000 ₫</td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Đã hủy</span>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+            <div class="flex space-x-2">
+              <button class="text-blue-600 hover:text-blue-900" onclick="editBooking('BK004')">
+                <i data-lucide="edit" class="w-4 h-4"></i>
+              </button>
+              <button class="text-red-600 hover:text-red-900" onclick="deleteBooking('BK004')">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+        <tr class="hover:bg-gray-50">
+          <td class="px-6 py-4 whitespace-nowrap">
+            <input type="checkbox" class="rounded border-gray-300 text-green-600 focus:ring-green-500">
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#BK005</td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="flex items-center">
+              <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mr-3">
+                <i data-lucide="user" class="w-5 h-5 text-gray-500"></i>
+              </div>
+              <div>
+                <div class="text-sm font-medium text-gray-900">Hoàng Văn E</div>
+                <div class="text-sm text-gray-500">0945xxx345</div>
+              </div>
+            </div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Sân A (5 người)</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+            <div>27/01/2024</div>
+            <div class="text-xs text-gray-400">19:00 - 21:00</div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2 giờ</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">700.000 ₫</td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">Chờ xác nhận</span>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+            <div class="flex space-x-2">
+              <button class="text-green-600 hover:text-green-900" onclick="confirmBooking('BK005')">
+                <i data-lucide="check" class="w-4 h-4"></i>
+              </button>
+              <button class="text-blue-600 hover:text-blue-900" onclick="editBooking('BK005')">
+                <i data-lucide="edit" class="w-4 h-4"></i>
+              </button>
+              <button class="text-red-600 hover:text-red-900" onclick="deleteBooking('BK005')">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  
+  <!-- Pagination -->
+  <div class="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+    <div class="flex items-center">
+      <span class="text-sm text-gray-700">Hiển thị 1-5 của 1,456 kết quả</span>
+    </div>
+    <div class="flex items-center space-x-2">
+      <button class="px-3 py-1 text-sm text-gray-500 bg-gray-100 rounded-md hover:bg-gray-200 disabled:opacity-50" disabled>
+        <i data-lucide="chevron-left" class="w-4 h-4"></i>
+      </button>
+      <button class="px-3 py-1 text-sm text-white bg-green-500 rounded-md">1</button>
+      <button class="px-3 py-1 text-sm text-gray-500 bg-gray-100 rounded-md hover:bg-gray-200">2</button>
+      <button class="px-3 py-1 text-sm text-gray-500 bg-gray-100 rounded-md hover:bg-gray-200">3</button>
+      <span class="px-2 text-sm text-gray-500">...</span>
+      <button class="px-3 py-1 text-sm text-gray-500 bg-gray-100 rounded-md hover:bg-gray-200">292</button>
+      <button class="px-3 py-1 text-sm text-gray-500 bg-gray-100 rounded-md hover:bg-gray-200">
+        <i data-lucide="chevron-right" class="w-4 h-4"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Booking Modal -->
+<div id="bookingModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+  <div class="flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full">
+      <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+        <h3 class="text-lg font-semibold text-gray-800" id="modalTitle">Thêm đặt sân mới</h3>
+        <button onclick="closeBookingModal()" class="text-gray-400 hover:text-gray-600">
+          <i data-lucide="x" class="w-6 h-6"></i>
+        </button>
+      </div>
+      
+      <form class="p-6 space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Khách hàng *</label>
+            <select required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+              <option value="">Chọn khách hàng</option>
+              <option value="1">Nguyễn Văn A - 0912xxx123</option>
+              <option value="2">Trần Thị B - 0987xxx456</option>
+              <option value="3">Lê Văn C - 0903xxx789</option>
+            </select>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Sân *</label>
+            <select required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+              <option value="">Chọn sân</option>
+              <option value="field1">Sân A (5 người) - 350.000₫/giờ</option>
+              <option value="field2">Sân B (7 người) - 450.000₫/giờ</option>
+              <option value="field3">Sân C (5 người) - 300.000₫/giờ</option>
+              <option value="field4">Sân D (7 người) - 450.000₫/giờ</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Ngày đặt *</label>
+            <input type="date" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Giờ bắt đầu *</label>
+            <input type="time" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Thời lượng (giờ) *</label>
+            <select required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+              <option value="">Chọn thời lượng</option>
+              <option value="1">1 giờ</option>
+              <option value="2">2 giờ</option>
+              <option value="3">3 giờ</option>
+              <option value="4">4 giờ</option>
+            </select>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Trạng thái</label>
+            <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+              <option value="pending">Chờ xác nhận</option>
+              <option value="confirmed">Đã xác nhận</option>
+              <option value="completed">Hoàn thành</option>
+              <option value="cancelled">Đã hủy</option>
+            </select>
+          </div>
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Ghi chú</label>
+          <textarea rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Nhập ghi chú..."></textarea>
+        </div>
+        
+        <div class="bg-gray-50 p-4 rounded-md">
+          <div class="flex justify-between items-center">
+            <span class="text-sm font-medium text-gray-700">Tổng tiền:</span>
+            <span class="text-lg font-bold text-green-600" id="totalAmount">0 ₫</span>
+          </div>
+        </div>
+      </form>
+      
+      <div class="px-6 py-4 border-t border-gray-200 flex justify-end space-x-2">
+        <button onclick="closeBookingModal()" class="px-4 py-2 text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors">
+          Hủy
+        </button>
+        <button class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors">
+          Lưu
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Initialize Lucide icons
+  lucide.createIcons();
+  
+  function openAddBookingModal() {
+    document.getElementById('bookingModal').classList.remove('hidden');
+    document.getElementById('modalTitle').textContent = 'Thêm đặt sân mới';
+  }
+  
+  function editBooking(bookingId) {
+    document.getElementById('bookingModal').classList.remove('hidden');
+    document.getElementById('modalTitle').textContent = 'Chỉnh sửa đặt sân';
+    // Load booking data here
+  }
+  
+  function closeBookingModal() {
+    document.getElementById('bookingModal').classList.add('hidden');
+  }
+  
+  function confirmBooking(bookingId) {
+    if (confirm('Bạn có chắc chắn muốn xác nhận đặt sân này?')) {
+      // Confirm booking logic here
+      console.log('Confirming booking:', bookingId);
+    }
+  }
+  
+  function deleteBooking(bookingId) {
+    if (confirm('Bạn có chắc chắn muốn xóa đặt sân này?')) {
+      // Delete booking logic here
+      console.log('Deleting booking:', bookingId);
+    }
+  }
+  
+  // Close modal when clicking outside
+  document.getElementById('bookingModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+      closeBookingModal();
+    }
+  });
+  
+  // Calculate total amount when field or duration changes
+  document.addEventListener('change', function(e) {
+    if (e.target.name === 'field' || e.target.name === 'duration') {
+      // Calculate total amount logic here
+      const totalAmount = document.getElementById('totalAmount');
+      totalAmount.textContent = '700.000 ₫'; // Example calculation
+    }
+  });
+</script>
+  });
+</script>

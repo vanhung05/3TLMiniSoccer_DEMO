@@ -1,0 +1,254 @@
+@model _3TLMiniSoccer.ViewModels.UserEditViewModel
+@{
+    ViewData["Title"] = "Thông tin cá nhân";
+    ViewData["Description"] = "Quản lý thông tin cá nhân và cài đặt tài khoản";
+}
+
+<!-- Profile Section -->
+<section class="min-h-screen py-8 px-4 sm:px-6 lg:px-8 bg-gray-50 relative">
+    <!-- Watermark -->
+    <div class="watermark"></div>
+    <div class="max-w-6xl mx-auto">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
+                @TempData["SuccessMessage"]
+            </div>
+        }
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left Sidebar - Profile Display -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-xl shadow-lg p-8 text-center">
+                    <!-- Avatar with Camera Icon -->
+                    <div class="avatar-container relative inline-block mb-6">
+                        <div class="w-32 h-32 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center mx-auto relative overflow-hidden">
+                            @if (!string.IsNullOrEmpty(Model.Avatar))
+                            {
+                                <img src="@Model.Avatar" alt="Avatar" class="w-full h-full object-cover rounded-full">
+                            }
+                            else
+                            {
+                                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                            }
+                        </div>
+                        <!-- Camera Icon -->
+                        <div class="camera-icon absolute bottom-2 right-2 w-8 h-8 bg-black bg-opacity-70 rounded-full flex items-center justify-center cursor-pointer hover:bg-opacity-90 transition">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                                <circle cx="12" cy="13" r="4"></circle>
+                            </svg>
+                        </div>
+                    </div>
+                    
+                    <!-- Name and Role -->
+                    <h2 class="text-2xl font-bold text-gray-900 mb-2">@Model.FirstName @Model.LastName</h2>
+                    <p class="text-blue-600 font-medium">Khách hàng</p>
+                </div>
+            </div>
+
+            <!-- Right Section - Personal Information Form -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-xl shadow-lg p-8">
+                    <h1 class="text-2xl font-bold text-gray-900 text-center mb-8">THÔNG TIN CÁ NHÂN</h1>
+                    
+                    <form asp-action="UpdateProfile" asp-controller="Account" method="post" class="space-y-6">
+                        <div asp-validation-summary="ModelOnly" class="text-red-600 mb-4"></div>
+
+                        <!-- Họ và Tên -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="form-group">
+                                <label asp-for="FirstName" class="block text-sm font-medium text-gray-700 mb-2">Họ</label>
+                                <input asp-for="FirstName" type="text" 
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" 
+                                       placeholder="Nhập họ" required>
+                                <span asp-validation-for="FirstName" class="text-red-600 text-sm"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="LastName" class="block text-sm font-medium text-gray-700 mb-2">Tên</label>
+                                <input asp-for="LastName" type="text" 
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" 
+                                       placeholder="Nhập tên" required>
+                                <span asp-validation-for="LastName" class="text-red-600 text-sm"></span>
+                            </div>
+                        </div>
+
+                        <!-- Tài khoản -->
+                        <div class="form-group">
+                            <label asp-for="Username" class="block text-sm font-medium text-gray-700 mb-2">Tài khoản</label>
+                            <input asp-for="Username" type="text" 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" 
+                                   placeholder="Nhập tài khoản" required>
+                            <span asp-validation-for="Username" class="text-red-600 text-sm"></span>
+                        </div>
+
+                        <!-- Mật khẩu -->
+                        <div class="form-group">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Mật khẩu</label>
+                            <div class="relative">
+                                <input type="password" id="password" 
+                                       class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" 
+                                       placeholder="Nhập mật khẩu" value="........">
+                                <button type="button" id="togglePassword" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Điện thoại -->
+                        <div class="form-group">
+                            <label asp-for="PhoneNumber" class="block text-sm font-medium text-gray-700 mb-2">Điện thoại</label>
+                            <input asp-for="PhoneNumber" type="tel" 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" 
+                                   placeholder="Nhập số điện thoại">
+                            <span asp-validation-for="PhoneNumber" class="text-red-600 text-sm"></span>
+                        </div>
+
+                        <!-- Email -->
+                        <div class="form-group">
+                            <label asp-for="Email" class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                            <input asp-for="Email" type="email" 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" 
+                                   placeholder="Nhập email" required>
+                            <span asp-validation-for="Email" class="text-red-600 text-sm"></span>
+                        </div>
+
+                        <!-- Giới tính -->
+                        <div class="form-group">
+                            <label class="block text-sm font-medium text-gray-700 mb-3">Giới tính</label>
+                            <div class="flex space-x-4">
+                                <label class="flex items-center">
+                                    <input asp-for="Gender" type="radio" value="Nam" class="mr-2 text-green-600 focus:ring-green-500" checked="@(Model.Gender == "Nam")">
+                                    <span class="text-sm text-gray-700">Nam</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input asp-for="Gender" type="radio" value="Nữ" class="mr-2 text-green-600 focus:ring-green-500" checked="@(Model.Gender == "Nữ")">
+                                    <span class="text-sm text-gray-700">Nữ</span>
+                                </label>
+                            </div>
+                            <span asp-validation-for="Gender" class="text-red-600 text-sm"></span>
+                        </div>
+
+                        <!-- Địa chỉ -->
+                        <div class="form-group">
+                            <label asp-for="Address" class="block text-sm font-medium text-gray-700 mb-2">Địa chỉ</label>
+                            <input asp-for="Address" type="text" 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" 
+                                   placeholder="Nhập địa chỉ">
+                            <span asp-validation-for="Address" class="text-red-600 text-sm"></span>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="text-center">
+                            <button type="submit" class="bg-white border-2 border-green-500 text-green-500 px-8 py-3 rounded-lg font-medium hover:bg-green-500 hover:text-white transition duration-300">
+                                Cập nhật hồ sơ
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <style>
+        /* Watermark */
+        .watermark {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 4rem;
+            font-weight: bold;
+            color: rgba(59, 130, 246, 0.1);
+            pointer-events: none;
+            z-index: -1;
+            user-select: none;
+        }
+        
+        .watermark::before {
+            content: "CODEDOAN.COM";
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        
+        /* Form styling */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group input:focus {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.15);
+        }
+        
+        /* Radio button styling */
+        input[type="radio"] {
+            accent-color: #22c55e;
+        }
+        
+        /* Button hover effects */
+        button[type="submit"]:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(34, 197, 94, 0.3);
+        }
+        
+        /* Avatar hover effect */
+        .avatar-container:hover .camera-icon {
+            background-opacity: 1;
+        }
+        
+        /* Password toggle */
+        #togglePassword {
+            transition: color 0.3s ease;
+        }
+        
+        #togglePassword:hover {
+            color: #22c55e;
+        }
+    </style>
+    
+    <script>
+        // Password toggle functionality
+        document.getElementById('togglePassword').addEventListener('click', function() {
+            const passwordField = document.getElementById('password');
+            const icon = this.querySelector('svg');
+            
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                icon.innerHTML = `
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                `;
+            } else {
+                passwordField.type = 'password';
+                icon.innerHTML = `
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                `;
+            }
+        });
+        
+        // Form submission loading state
+        document.querySelector('form').addEventListener('submit', function() {
+            const submitBtn = this.querySelector('button[type="submit"]');
+            submitBtn.textContent = 'Đang cập nhật...';
+            submitBtn.disabled = true;
+        });
+        
+        // Avatar upload functionality (placeholder)
+        document.querySelector('.camera-icon').addEventListener('click', function() {
+            // TODO: Implement avatar upload functionality
+            alert('Tính năng thay đổi ảnh đại diện sẽ được cập nhật sớm!');
+        });
+    </script>
+}

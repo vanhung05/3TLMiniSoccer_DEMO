@@ -1,0 +1,484 @@
+@model _3TLMiniSoccer.ViewModels.OrderAdminViewModel
+@{
+    ViewData["Title"] = "Đơn hàng";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="flex-1 overflow-y-auto p-6 bg-gray-50">
+    <!-- Header Actions -->
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">Quản lý đơn hàng</h1>
+        <div class="flex space-x-2">
+            <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+                <i data-lucide="download" class="w-4 h-4"></i>
+                <span>Xuất báo cáo</span>
+            </button>
+            <button class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2" onclick="refreshOrders()">
+                <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                <span>Làm mới</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6" id="orderStats">
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-blue-100 text-blue-500">
+                    <i data-lucide="shopping-cart" class="w-6 h-6"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm text-gray-500">Tổng đơn hàng</p>
+                    <p class="text-2xl font-bold" id="totalOrders">-</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-green-100 text-green-500">
+                    <i data-lucide="check-circle" class="w-6 h-6"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm text-gray-500">Đã giao</p>
+                    <p class="text-2xl font-bold" id="deliveredOrders">-</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-yellow-100 text-yellow-500">
+                    <i data-lucide="clock" class="w-6 h-6"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm text-gray-500">Đang xử lý</p>
+                    <p class="text-2xl font-bold" id="processingOrders">-</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-red-100 text-red-500">
+                    <i data-lucide="x-circle" class="w-6 h-6"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm text-gray-500">Đã hủy</p>
+                    <p class="text-2xl font-bold" id="cancelledOrders">-</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters and Search -->
+    <div class="bg-white rounded-lg shadow p-4 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Tìm kiếm</label>
+                <input type="text" id="searchInput" placeholder="Mã đơn hàng, tên khách..." class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Trạng thái</label>
+                <select id="statusFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                    <option value="">Tất cả trạng thái</option>
+                    <option value="Pending">Chờ xử lý</option>
+                    <option value="Processing">Đang xử lý</option>
+                    <option value="Shipped">Đã giao</option>
+                    <option value="Delivered">Đã nhận</option>
+                    <option value="Cancelled">Đã hủy</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Từ ngày</label>
+                <input type="date" id="fromDate" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Đến ngày</label>
+                <input type="date" id="toDate" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+            </div>
+            <div class="flex items-end">
+                <button class="w-full bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md" onclick="searchOrders()">
+                    <i data-lucide="search" class="w-4 h-4 inline mr-2"></i>
+                    Tìm kiếm
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Orders Table -->
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mã đơn</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Khách hàng</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sản phẩm</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Số lượng</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tổng tiền</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày đặt</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200" id="ordersTableBody">
+                    @if (Model.Orders.Any())
+                    {
+                        @foreach (var order in Model.Orders)
+                        {
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">@order.OrderCode</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div>
+                                        <div class="text-sm font-medium text-gray-900">@order.CustomerName</div>
+                                        <div class="text-sm text-gray-500">@order.CustomerPhone</div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                                    @if (order.OrderItems.Any())
+                                    {
+                                        var firstItem = order.OrderItems.First();
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 bg-gray-200 rounded-md flex items-center justify-center">
+                                                @if (!string.IsNullOrEmpty(firstItem.ProductImage))
+                                                {
+                                                    <img src="@firstItem.ProductImage" alt="@firstItem.ProductName" class="w-8 h-8 rounded object-cover">
+                                                }
+                                                else
+                                                {
+                                    <i data-lucide="package" class="w-5 h-5 text-gray-500"></i>
+                                                }
+                                </div>
+                                <div class="ml-3">
+                                                <div class="text-sm font-medium text-gray-900">@firstItem.ProductName</div>
+                                                <div class="text-sm text-gray-500">@firstItem.Category</div>
+                                </div>
+                            </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="text-sm text-gray-500">Không có sản phẩm</div>
+                                    }
+                        </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">@order.OrderItems.Sum(oi => oi.Quantity)</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">@order.TotalAmount.ToString("N0") ₫</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">@order.CreatedAt.ToString("dd/MM/yyyy")</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                                    @{
+                                        var statusClass = order.Status switch
+                                        {
+                                            "Pending" => "bg-blue-100 text-blue-800",
+                                            "Processing" => "bg-yellow-100 text-yellow-800",
+                                            "Shipped" => "bg-purple-100 text-purple-800",
+                                            "Delivered" => "bg-green-100 text-green-800",
+                                            "Cancelled" => "bg-red-100 text-red-800",
+                                            _ => "bg-gray-100 text-gray-800"
+                                        };
+                                        var statusText = order.Status switch
+                                        {
+                                            "Pending" => "Chờ xử lý",
+                                            "Processing" => "Đang xử lý",
+                                            "Shipped" => "Đã giao",
+                                            "Delivered" => "Đã nhận",
+                                            "Cancelled" => "Đã hủy",
+                                            _ => order.Status
+                                        };
+                                    }
+                                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full @statusClass">
+                                        @statusText
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div class="flex space-x-2">
+                                        <button class="text-blue-600 hover:text-blue-900" onclick="viewOrder(@order.OrderId)" title="Xem chi tiết">
+                                    <i data-lucide="eye" class="w-4 h-4"></i>
+                                </button>
+                                        @if (order.Status != "Cancelled" && order.Status != "Delivered")
+                                        {
+                                            <button class="text-green-600 hover:text-green-900" onclick="updateOrderStatus(@order.OrderId)" title="Cập nhật trạng thái">
+                                    <i data-lucide="edit" class="w-4 h-4"></i>
+                                </button>
+                                        }
+                                        @if (order.Status == "Pending" || order.Status == "Processing")
+                                        {
+                                            <button class="text-red-600 hover:text-red-900" onclick="cancelOrder(@order.OrderId)" title="Hủy đơn hàng">
+                                    <i data-lucide="x" class="w-4 h-4"></i>
+                                </button>
+                                        }
+                                        @if (order.Status == "Cancelled")
+                                        {
+                                            <button class="text-gray-600 hover:text-gray-900" onclick="deleteOrder(@order.OrderId)" title="Xóa đơn hàng">
+                                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                </button>
+                                        }
+                            </div>
+                        </td>
+                    </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="8" class="px-6 py-4 text-center text-gray-500">
+                                Không có đơn hàng nào
+                        </td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+            <div class="flex-1 flex justify-between sm:hidden">
+                <button class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50" onclick="changePage(@(Model.Page - 1))" @(Model.Page <= 1 ? "disabled" : "")>
+                    Trước
+                </button>
+                <button class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50" onclick="changePage(@(Model.Page + 1))" @(Model.Page >= Model.TotalPages ? "disabled" : "")>
+                    Sau
+                </button>
+            </div>
+            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                <div>
+                    <p class="text-sm text-gray-700">
+                        Hiển thị <span class="font-medium">@((Model.Page - 1) * Model.PageSize + 1)</span> đến <span class="font-medium">@(Math.Min(Model.Page * Model.PageSize, Model.TotalCount))</span> của <span class="font-medium">@Model.TotalCount</span> kết quả
+                    </p>
+                </div>
+                <div>
+                    <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                        <button class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50" onclick="changePage(@(Model.Page - 1))" @(Model.Page <= 1 ? "disabled" : "")>
+                            <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                        </button>
+                        @for (int i = Math.Max(1, Model.Page - 2); i <= Math.Min(Model.TotalPages, Model.Page + 2); i++)
+                        {
+                            <button class="relative inline-flex items-center px-4 py-2 border text-sm font-medium @(i == Model.Page ? "bg-blue-50 border-blue-500 text-blue-600" : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50")" onclick="changePage(@i)">
+                                @i
+                            </button>
+                        }
+                        <button class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50" onclick="changePage(@(Model.Page + 1))" @(Model.Page >= Model.TotalPages ? "disabled" : "")>
+                            <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                        </button>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let currentPage = @Model.Page;
+        let currentFilters = {
+            search: '',
+            status: '',
+            fromDate: '',
+            toDate: ''
+        };
+
+        // Initialize Lucide icons
+        lucide.createIcons();
+        
+        // Load order statistics
+        loadOrderStatistics();
+
+        function loadOrderStatistics() {
+            fetch('/Admin/GetOrderStatistics')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('totalOrders').textContent = data.data.totalOrders;
+                        document.getElementById('deliveredOrders').textContent = data.data.deliveredOrders;
+                        document.getElementById('processingOrders').textContent = data.data.processingOrders;
+                        document.getElementById('cancelledOrders').textContent = data.data.cancelledOrders;
+                    }
+                })
+                .catch(error => console.error('Error loading statistics:', error));
+        }
+
+        function searchOrders() {
+            currentFilters.search = document.getElementById('searchInput').value;
+            currentFilters.status = document.getElementById('statusFilter').value;
+            currentFilters.fromDate = document.getElementById('fromDate').value;
+            currentFilters.toDate = document.getElementById('toDate').value;
+            currentPage = 1;
+            loadOrders();
+        }
+
+        function refreshOrders() {
+            currentPage = 1;
+            currentFilters = { search: '', status: '', fromDate: '', toDate: '' };
+            document.getElementById('searchInput').value = '';
+            document.getElementById('statusFilter').value = '';
+            document.getElementById('fromDate').value = '';
+            document.getElementById('toDate').value = '';
+            loadOrders();
+            loadOrderStatistics();
+        }
+
+        function changePage(page) {
+            if (page >= 1) {
+                currentPage = page;
+                loadOrders();
+            }
+        }
+
+        function loadOrders() {
+            const params = new URLSearchParams({
+                page: currentPage,
+                pageSize: 10,
+                ...currentFilters
+            });
+
+            fetch(`/Admin/GetOrders?${params}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        updateOrdersTable(data.data.orders);
+                        updatePagination(data.data);
+                    }
+                })
+                .catch(error => console.error('Error loading orders:', error));
+        }
+
+        function updateOrdersTable(orders) {
+            const tbody = document.getElementById('ordersTableBody');
+            if (orders.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" class="px-6 py-4 text-center text-gray-500">Không có đơn hàng nào</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = orders.map(order => {
+                const statusClass = getStatusClass(order.status);
+                const statusText = getStatusText(order.status);
+                const firstItem = order.orderItems && order.orderItems.length > 0 ? order.orderItems[0] : null;
+                const totalQuantity = order.orderItems ? order.orderItems.reduce((sum, item) => sum + item.quantity, 0) : 0;
+
+                return `
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${order.orderCode}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div>
+                                <div class="text-sm font-medium text-gray-900">${order.customerName}</div>
+                                <div class="text-sm text-gray-500">${order.customerPhone}</div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            ${firstItem ? `
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 bg-gray-200 rounded-md flex items-center justify-center">
+                                        ${firstItem.productImage ? 
+                                            `<img src="${firstItem.productImage}" alt="${firstItem.productName}" class="w-8 h-8 rounded object-cover">` :
+                                            `<i data-lucide="package" class="w-5 h-5 text-gray-500"></i>`
+                                        }
+                                    </div>
+                                    <div class="ml-3">
+                                        <div class="text-sm font-medium text-gray-900">${firstItem.productName}</div>
+                                        <div class="text-sm text-gray-500">${firstItem.category || ''}</div>
+                                    </div>
+                                </div>
+                            ` : '<div class="text-sm text-gray-500">Không có sản phẩm</div>'}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${totalQuantity}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${formatCurrency(order.totalAmount)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${formatDate(order.createdAt)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${statusClass}">
+                                ${statusText}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div class="flex space-x-2">
+                                <button class="text-blue-600 hover:text-blue-900" onclick="viewOrder(${order.orderId})" title="Xem chi tiết">
+                                    <i data-lucide="eye" class="w-4 h-4"></i>
+                                </button>
+                                ${order.status !== 'Cancelled' && order.status !== 'Delivered' ? `
+                                    <button class="text-green-600 hover:text-green-900" onclick="updateOrderStatus(${order.orderId})" title="Cập nhật trạng thái">
+                                        <i data-lucide="edit" class="w-4 h-4"></i>
+                                    </button>
+                                ` : ''}
+                                ${order.status === 'Pending' || order.status === 'Processing' ? `
+                                    <button class="text-red-600 hover:text-red-900" onclick="cancelOrder(${order.orderId})" title="Hủy đơn hàng">
+                                        <i data-lucide="x" class="w-4 h-4"></i>
+                                    </button>
+                                ` : ''}
+                                ${order.status === 'Cancelled' ? `
+                                    <button class="text-gray-600 hover:text-gray-900" onclick="deleteOrder(${order.orderId})" title="Xóa đơn hàng">
+                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            // Re-initialize Lucide icons for new content
+            lucide.createIcons();
+        }
+
+        function updatePagination(data) {
+            // Update pagination info
+            const startItem = (data.page - 1) * data.pageSize + 1;
+            const endItem = Math.min(data.page * data.pageSize, data.totalCount);
+            
+            const paginationInfo = document.querySelector('.text-sm.text-gray-700');
+            if (paginationInfo) {
+                paginationInfo.innerHTML = `
+                    Hiển thị <span class="font-medium">${startItem}</span> đến <span class="font-medium">${endItem}</span> của <span class="font-medium">${data.totalCount}</span> kết quả
+                `;
+            }
+        }
+
+        function getStatusClass(status) {
+            switch (status) {
+                case 'Pending': return 'bg-blue-100 text-blue-800';
+                case 'Processing': return 'bg-yellow-100 text-yellow-800';
+                case 'Shipped': return 'bg-purple-100 text-purple-800';
+                case 'Delivered': return 'bg-green-100 text-green-800';
+                case 'Cancelled': return 'bg-red-100 text-red-800';
+                default: return 'bg-gray-100 text-gray-800';
+            }
+        }
+
+        function getStatusText(status) {
+            switch (status) {
+                case 'Pending': return 'Chờ xử lý';
+                case 'Processing': return 'Đang xử lý';
+                case 'Shipped': return 'Đã giao';
+                case 'Delivered': return 'Đã nhận';
+                case 'Cancelled': return 'Đã hủy';
+                default: return status;
+            }
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('vi-VN').format(amount) + ' ₫';
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('vi-VN');
+        }
+
+        function viewOrder(orderId) {
+            alert('Xem chi tiết đơn hàng #' + orderId);
+        }
+
+        function updateOrderStatus(orderId) {
+            alert('Cập nhật trạng thái đơn hàng #' + orderId);
+        }
+
+        function cancelOrder(orderId) {
+            if (confirm('Bạn có chắc chắn muốn hủy đơn hàng này?')) {
+                alert('Đã hủy đơn hàng thành công!');
+            }
+        }
+
+        function deleteOrder(orderId) {
+            if (confirm('Bạn có chắc chắn muốn xóa đơn hàng này?')) {
+                alert('Đã xóa đơn hàng thành công!');
+            }
+        }
+    </script>
+}

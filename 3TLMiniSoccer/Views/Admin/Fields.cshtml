@@ -1,0 +1,1195 @@
+@model _3TLMiniSoccer.ViewModels.FieldListViewModel
+@{
+    ViewData["Title"] = "Quản lý sân bóng";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<h1 class="text-2xl font-bold text-gray-800 mb-6">Quản lý sân bóng</h1>
+
+<!-- Quick Stats -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+  <!-- Total Fields -->
+  <div class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow">
+    <div class="flex items-center">
+      <div class="p-3 rounded-full bg-blue-100 text-blue-500">
+        <i data-lucide="stadium" class="w-6 h-6"></i>
+      </div>
+      <div class="ml-4">
+        <p class="text-sm text-gray-500">Tổng số sân</p>
+        <p class="text-2xl font-bold">@Model.Stats.TotalFields</p>
+        <p class="text-xs text-gray-400">Tất cả</p>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Active Fields -->
+  <div class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow">
+    <div class="flex items-center">
+      <div class="p-3 rounded-full bg-green-100 text-green-500">
+        <i data-lucide="check-circle" class="w-6 h-6"></i>
+      </div>
+      <div class="ml-4">
+        <p class="text-sm text-gray-500">Sân hoạt động</p>
+        <p class="text-2xl font-bold">@Model.Stats.ActiveFields</p>
+        <p class="text-xs text-gray-400">@Model.Stats.ActivePercentage.ToString("F1")%</p>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Maintenance Fields -->
+  <div class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow">
+    <div class="flex items-center">
+      <div class="p-3 rounded-full bg-yellow-100 text-yellow-500">
+        <i data-lucide="wrench" class="w-6 h-6"></i>
+      </div>
+      <div class="ml-4">
+        <p class="text-sm text-gray-500">Đang bảo trì</p>
+        <p class="text-2xl font-bold">@Model.Stats.MaintenanceFields</p>
+        <p class="text-xs text-gray-400">@Model.Stats.MaintenancePercentage.ToString("F1")%</p>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Inactive Fields -->
+  <div class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow">
+    <div class="flex items-center">
+      <div class="p-3 rounded-full bg-red-100 text-red-500">
+        <i data-lucide="x-circle" class="w-6 h-6"></i>
+      </div>
+      <div class="ml-4">
+        <p class="text-sm text-gray-500">Không hoạt động</p>
+        <p class="text-2xl font-bold">@Model.Stats.InactiveFields</p>
+        <p class="text-xs text-gray-400">@Model.Stats.InactivePercentage.ToString("F1")%</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tab Navigation -->
+<div class="bg-white rounded-lg shadow mb-6">
+    <div class="border-b border-gray-200">
+        <nav class="-mb-px flex space-x-8 px-6" aria-label="Tabs">
+            <button onclick="switchTab('fields')" id="fields-tab" class="tab-button active border-green-500 text-green-600 py-4 px-1 border-b-2 font-medium text-sm">
+                <span class="flex items-center">
+                    <i data-lucide="stadium" class="w-4 h-4 mr-2"></i>
+                    Quản lý sân bóng
+                </span>
+            </button>
+            <button onclick="switchTab('pricing')" id="pricing-tab" class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 py-4 px-1 border-b-2 font-medium text-sm">
+                <span class="flex items-center">
+                    <i data-lucide="dollar-sign" class="w-4 h-4 mr-2"></i>
+                    Quy tắc giá
+                </span>
+            </button>
+        </nav>
+    </div>
+</div>
+
+<!-- Fields Tab Content -->
+<div id="fields-content" class="tab-content">
+<!-- Filters -->
+<div class="bg-white rounded-lg shadow p-6 mb-6">
+  <form method="get" action="/Admin/Fields">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Tìm kiếm theo tên sân</label>
+        <input type="text" name="SearchTerm" value="@Model.Filter.SearchTerm" placeholder="Nhập tên sân..." class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Loại sân</label>
+        <select name="FieldType" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+          <option value="">Tất cả loại sân</option>
+          @if (ViewBag.FieldTypes != null)
+          {
+            @foreach (var fieldType in (List<_3TLMiniSoccer.Models.FieldType>)ViewBag.FieldTypes)
+            {
+              @if (Model.Filter.FieldType == fieldType.FieldTypeId.ToString())
+              {
+                <option value="@fieldType.FieldTypeId" selected="selected">Sân @fieldType.PlayerCount người</option>
+              }
+              else
+              {
+                <option value="@fieldType.FieldTypeId">Sân @fieldType.PlayerCount người</option>
+              }
+            }
+          }
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Trạng thái</label>
+        <select name="Status" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+          <option value="">Tất cả trạng thái</option>
+          @if (Model.Filter.Status == "Active")
+          {
+            <option value="Active" selected="selected">Hoạt động</option>
+          }
+          else
+          {
+            <option value="Active">Hoạt động</option>
+          }
+          @if (Model.Filter.Status == "Maintenance")
+          {
+            <option value="Maintenance" selected="selected">Bảo trì</option>
+          }
+          else
+          {
+            <option value="Maintenance">Bảo trì</option>
+          }
+          @if (Model.Filter.Status == "Inactive")
+          {
+            <option value="Inactive" selected="selected">Không hoạt động</option>
+          }
+          else
+          {
+            <option value="Inactive">Không hoạt động</option>
+          }
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Mức giá</label>
+        <select name="PriceRange" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+          <option value="">Tất cả mức giá</option>
+          @if (Model.Filter.PriceRange == "low")
+          {
+            <option value="low" selected="selected">Dưới 300.000₫</option>
+          }
+          else
+          {
+            <option value="low">Dưới 300.000₫</option>
+          }
+          @if (Model.Filter.PriceRange == "medium")
+          {
+            <option value="medium" selected="selected">300.000₫ - 500.000₫</option>
+          }
+          else
+          {
+            <option value="medium">300.000₫ - 500.000₫</option>
+          }
+          @if (Model.Filter.PriceRange == "high")
+          {
+            <option value="high" selected="selected">Trên 500.000₫</option>
+          }
+          else
+          {
+            <option value="high">Trên 500.000₫</option>
+          }
+        </select>
+      </div>
+    </div>
+    <div class="mt-4 flex justify-end space-x-2">
+      <a href="/Admin/Fields" class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors">
+        <i data-lucide="x" class="w-4 h-4 inline mr-2"></i>
+        Xóa bộ lọc
+      </a>
+      <button type="submit" class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors">
+        <i data-lucide="search" class="w-4 h-4 inline mr-2"></i>
+        Tìm kiếm
+      </button>
+    </div>
+  </form>
+</div>
+
+<!-- Fields Table -->
+<div class="bg-white rounded-lg shadow overflow-hidden">
+  <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+    <h3 class="text-lg font-semibold text-gray-800">Danh sách sân bóng</h3>
+    <button class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors" onclick="openAddFieldModal()">
+      <i data-lucide="plus" class="w-4 h-4 inline mr-2"></i>
+      Thêm sân bóng
+    </button>
+  </div>
+  
+  <div class="overflow-x-auto">
+    @if (Model.Fields.Any())
+    {
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hình ảnh</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tên sân</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Loại sân</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Giá thuê</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vị trí</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày tạo</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thao tác</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          @foreach (var field in Model.Fields)
+          {
+            <tr class="hover:bg-gray-50 transition-colors">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex-shrink-0 h-16 w-16">
+                  @if (!string.IsNullOrEmpty(field.ImageUrl))
+                  {
+                    <img class="h-16 w-16 rounded-lg object-cover border border-gray-200" src="/images/san/@field.ImageUrl" alt="@field.FieldName" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0yNCAyNEg0MFY0MEgyNFYyNFoiIGZpbGw9IiM5Q0EzQUYiLz4KPHBhdGggZD0iTTI4IDI4SDM2VjM2SDI4VjI4WiIgZmlsbD0iI0ZGRkZGRiIvPgo8L3N2Zz4K'">
+                  }
+                  else
+                  {
+                    <div class="h-16 w-16 rounded-lg bg-gray-200 flex items-center justify-center border border-gray-200">
+                      <i data-lucide="stadium" class="w-8 h-8 text-gray-400"></i>
+                    </div>
+                  }
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex flex-col">
+                  <div class="text-sm font-medium text-gray-900">@field.FieldName</div>
+                  @if (!string.IsNullOrEmpty(field.Description))
+                  {
+                    <div class="text-sm text-gray-500 truncate max-w-xs" title="@field.Description">@field.Description</div>
+                  }
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex flex-col">
+                  <div class="text-sm font-medium text-gray-900">@field.FieldTypeDisplay</div>
+                  <div class="text-sm text-gray-500">@field.SizeDisplay</div>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-gray-900">@field.FormattedPrice</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center text-sm text-gray-900">
+                  <i data-lucide="map-pin" class="w-4 h-4 mr-2 text-gray-400"></i>
+                  @field.Location
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full @field.StatusClass">
+                  @field.StatusText
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                @field.CreatedAt.ToString("dd/MM/yyyy")
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                <div class="flex space-x-2">
+                  <button class="text-blue-600 hover:text-blue-900 transition-colors" onclick="editField(@field.FieldId)" title="Chỉnh sửa">
+                    <i data-lucide="edit" class="w-4 h-4"></i>
+                  </button>
+                  <button class="text-red-600 hover:text-red-900 transition-colors" onclick="deleteField(@field.FieldId)" title="Xóa">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                  </button>
+                  <button class="text-green-600 hover:text-green-900 transition-colors" onclick="viewFieldDetails(@field.FieldId)" title="Xem chi tiết">
+                    <i data-lucide="eye" class="w-4 h-4"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+    else
+    {
+      <div class="text-center py-12">
+        <i data-lucide="stadium" class="w-16 h-16 mx-auto text-gray-400 mb-4"></i>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">Chưa có sân bóng nào</h3>
+        <p class="text-gray-500 mb-4">Bắt đầu bằng cách thêm sân bóng đầu tiên của bạn.</p>
+        <button class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors" onclick="openAddFieldModal()">
+          <i data-lucide="plus" class="w-4 h-4 inline mr-2"></i>
+          Thêm sân bóng
+        </button>
+      </div>
+    }
+  </div>
+</div>
+
+<!-- Pagination -->
+@if (Model.TotalPages > 1)
+{
+  <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+    <div class="flex-1 flex justify-between sm:hidden">
+      @if (Model.CurrentPage > 1)
+      {
+        <a href="?SearchTerm=@Model.Filter.SearchTerm&FieldType=@Model.Filter.FieldType&Status=@Model.Filter.Status&PriceRange=@Model.Filter.PriceRange&Page=@(Model.CurrentPage - 1)" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+          Trước
+        </a>
+      }
+      @if (Model.CurrentPage < Model.TotalPages)
+      {
+        <a href="?SearchTerm=@Model.Filter.SearchTerm&FieldType=@Model.Filter.FieldType&Status=@Model.Filter.Status&PriceRange=@Model.Filter.PriceRange&Page=@(Model.CurrentPage + 1)" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+          Sau
+        </a>
+      }
+    </div>
+    <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+      <div>
+        <p class="text-sm text-gray-700">
+          Hiển thị <span class="font-medium">@((Model.CurrentPage - 1) * Model.PageSize + 1)</span> đến <span class="font-medium">@Math.Min(Model.CurrentPage * Model.PageSize, Model.TotalFields)</span> trong tổng số <span class="font-medium">@Model.TotalFields</span> sân
+        </p>
+      </div>
+      <div>
+        <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+          @if (Model.CurrentPage > 1)
+          {
+            <a href="?SearchTerm=@Model.Filter.SearchTerm&FieldType=@Model.Filter.FieldType&Status=@Model.Filter.Status&PriceRange=@Model.Filter.PriceRange&Page=@(Model.CurrentPage - 1)" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+              <i data-lucide="chevron-left" class="w-5 h-5"></i>
+            </a>
+          }
+          
+          @for (int i = Math.Max(1, Model.CurrentPage - 2); i <= Math.Min(Model.TotalPages, Model.CurrentPage + 2); i++)
+          {
+            @if (i == Model.CurrentPage)
+            {
+              <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-green-50 text-sm font-medium text-green-600">
+                @i
+              </span>
+            }
+            else
+            {
+              <a href="?SearchTerm=@Model.Filter.SearchTerm&FieldType=@Model.Filter.FieldType&Status=@Model.Filter.Status&PriceRange=@Model.Filter.PriceRange&Page=@i" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                @i
+              </a>
+            }
+          }
+          
+          @if (Model.CurrentPage < Model.TotalPages)
+          {
+            <a href="?SearchTerm=@Model.Filter.SearchTerm&FieldType=@Model.Filter.FieldType&Status=@Model.Filter.Status&PriceRange=@Model.Filter.PriceRange&Page=@(Model.CurrentPage + 1)" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+              <i data-lucide="chevron-right" class="w-5 h-5"></i>
+            </a>
+          }
+        </nav>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Add Field Modal -->
+<div id="fieldModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+<div class="flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full">
+      <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+        <h3 class="text-lg font-semibold text-gray-800" id="modalTitle">Thêm sân bóng mới</h3>
+        <button onclick="closeFieldModal()" class="text-gray-400 hover:text-gray-600">
+          <i data-lucide="x" class="w-6 h-6"></i>
+        </button>
+      </div>
+      
+      <form class="p-6 space-y-4" id="fieldForm">
+        <input type="hidden" name="FieldId" id="fieldId" value="">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Tên sân *</label>
+            <input type="text" name="FieldName" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Loại sân *</label>
+            <select name="FieldTypeId" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+              <option value="">Chọn loại sân</option>
+              @if (ViewBag.FieldTypes != null)
+              {
+                @foreach (var fieldType in (List<_3TLMiniSoccer.Models.FieldType>)ViewBag.FieldTypes)
+                {
+                  <option value="@fieldType.FieldTypeId">Sân @fieldType.TypeName - @fieldType.BasePrice.ToString("N0")₫/giờ</option>
+                }
+              }
+            </select>
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Vị trí *</label>
+            <input type="text" name="Location" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Ví dụ: Tầng 1, Khu A">
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Trạng thái</label>
+            <select name="Status" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+              <option value="Active">Hoạt động</option>
+              <option value="Maintenance">Bảo trì</option>
+              <option value="Inactive">Không hoạt động</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Giờ mở sân</label>
+            <input type="time" name="OpeningTime" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" value="06:00">
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Giờ đóng sân</label>
+            <input type="time" name="ClosingTime" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" value="23:00">
+          </div>
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Mô tả</label>
+          <textarea name="Description" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Nhập mô tả sân..."></textarea>
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Hình ảnh sân</label>
+          <div class="space-y-3">
+            <input type="file" id="imageFile" name="ImageFile" accept="image/*" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+            <div class="text-sm text-gray-500">
+              <p>• Định dạng: JPG, PNG, WebP</p>
+              <p>• Kích thước tối đa: 5MB</p>
+              <p>• Khuyến nghị: 1920x1080px</p>
+            </div>
+            <div id="imagePreview" class="hidden">
+              <img id="previewImg" class="w-32 h-24 object-cover rounded-lg border border-gray-200" alt="Preview">
+            </div>
+          </div>
+        </div>
+        
+        <div class="flex justify-end space-x-3 pt-4">
+          <button type="button" onclick="closeFieldModal()" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+            Hủy
+          </button>
+          <button type="submit" class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">
+            <span id="submitText">Thêm sân</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- Pricing Rules Tab Content -->
+<div id="pricing-content" class="tab-content hidden">
+  <!-- Pricing Rules Filters -->
+  <div class="bg-white rounded-lg shadow p-6 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Loại sân</label>
+        <select id="pricingFieldTypeFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+          <option value="">Tất cả loại sân</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Thứ trong tuần</label>
+        <select id="pricingDayFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+          <option value="">Tất cả thứ</option>
+          <option value="1">Thứ 2</option>
+          <option value="2">Thứ 3</option>
+          <option value="3">Thứ 4</option>
+          <option value="4">Thứ 5</option>
+          <option value="5">Thứ 6</option>
+          <option value="6">Thứ 7</option>
+          <option value="7">Chủ nhật</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Trạng thái</label>
+        <select id="pricingStatusFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+          <option value="">Tất cả trạng thái</option>
+          <option value="active">Đang hiệu lực</option>
+          <option value="expired">Hết hiệu lực</option>
+          <option value="future">Chưa hiệu lực</option>
+        </select>
+      </div>
+    </div>
+    <div class="mt-4 flex justify-end space-x-2">
+      <button onclick="clearPricingFilters()" class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors">
+        <i data-lucide="x" class="w-4 h-4 inline mr-2"></i>
+        Xóa bộ lọc
+      </button>
+      <button onclick="loadPricingRules()" class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors">
+        <i data-lucide="search" class="w-4 h-4 inline mr-2"></i>
+        Tìm kiếm
+      </button>
+    </div>
+  </div>
+
+  <!-- Pricing Rules Table -->
+  <div class="bg-white rounded-lg shadow overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+      <h3 class="text-lg font-semibold text-gray-800">Danh sách quy tắc giá</h3>
+      <button class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors" onclick="openAddPricingRuleModal()">
+        <i data-lucide="plus" class="w-4 h-4 inline mr-2"></i>
+        Thêm quy tắc giá
+      </button>
+    </div>
+    
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Loại sân</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thứ</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Khung giờ</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Giá</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cao điểm</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hiệu lực</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thao tác</th>
+          </tr>
+        </thead>
+        <tbody id="pricingRulesTableBody" class="bg-white divide-y divide-gray-200">
+          <!-- Pricing rules will be loaded here -->
+        </tbody>
+      </table>
+    </div>
+    
+    <div id="pricingRulesPagination" class="px-6 py-3 border-t border-gray-200">
+      <!-- Pagination will be loaded here -->
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Pricing Rule Modal -->
+<div id="pricingRuleModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+  <div class="flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full">
+      <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+        <h3 class="text-lg font-semibold text-gray-800" id="pricingModalTitle">Thêm quy tắc giá mới</h3>
+        <button onclick="closePricingRuleModal()" class="text-gray-400 hover:text-gray-600">
+          <i data-lucide="x" class="w-6 h-6"></i>
+        </button>
+      </div>
+      
+      <form class="p-6 space-y-4" id="pricingRuleForm">
+        <input type="hidden" id="pricingRuleId" name="PricingRuleId" value="0">
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Loại sân *</label>
+            <select id="pricingFieldTypeId" name="FieldTypeId" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" required>
+              <option value="">Chọn loại sân</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Thứ trong tuần *</label>
+            <select id="pricingDayOfWeek" name="DayOfWeek" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" required>
+              <option value="">Chọn thứ</option>
+              <option value="1">Thứ 2</option>
+              <option value="2">Thứ 3</option>
+              <option value="3">Thứ 4</option>
+              <option value="4">Thứ 5</option>
+              <option value="5">Thứ 6</option>
+              <option value="6">Thứ 7</option>
+              <option value="7">Chủ nhật</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Giờ bắt đầu *</label>
+            <input type="time" id="pricingStartTime" name="StartTime" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" required>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Giờ kết thúc *</label>
+            <input type="time" id="pricingEndTime" name="EndTime" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" required>
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Giá (VNĐ) *</label>
+            <input type="number" id="pricingPrice" name="Price" step="1000" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Nhập giá..." required>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Hệ số tăng giá</label>
+            <input type="number" id="pricingPeakMultiplier" name="PeakMultiplier" step="0.1" min="1.0" max="5.0" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" value="1.0">
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Ngày hiệu lực *</label>
+            <input type="date" id="pricingEffectiveFrom" name="EffectiveFrom" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" required>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Ngày hết hiệu lực</label>
+            <input type="date" id="pricingEffectiveTo" name="EffectiveTo" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+          </div>
+        </div>
+        
+        <div class="flex items-center">
+          <input type="checkbox" id="pricingIsPeakHour" name="IsPeakHour" class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
+          <label for="pricingIsPeakHour" class="ml-2 block text-sm text-gray-700">
+            Giờ cao điểm
+          </label>
+        </div>
+        
+        <div class="flex justify-end space-x-3 pt-4">
+          <button type="button" onclick="closePricingRuleModal()" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+            Hủy
+          </button>
+          <button type="submit" class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">
+            <span id="pricingSubmitText">Thêm quy tắc</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  let isEditMode = false;
+  let currentFieldId = null;
+
+  function openAddFieldModal() {
+    isEditMode = false;
+    currentFieldId = null;
+    document.getElementById('fieldModal').classList.remove('hidden');
+    document.getElementById('modalTitle').textContent = 'Thêm sân bóng mới';
+    document.getElementById('submitText').textContent = 'Thêm sân';
+    document.getElementById('fieldForm').reset();
+    document.getElementById('fieldId').value = '';
+  }
+  
+  async function editField(fieldId) {
+    try {
+      console.log('Fetching field data for ID:', fieldId);
+      const response = await fetch(`/Admin/GetField/${fieldId}`);
+      const result = await response.json();
+      console.log('API Response:', result);
+      
+      if (result.success) {
+        isEditMode = true;
+        currentFieldId = fieldId;
+        
+        // Fill form with field data
+        try {
+          const form = document.getElementById('fieldForm');
+          console.log('Form found:', form);
+          console.log('Form fields:', {
+            FieldId: form.FieldId,
+            FieldName: form.FieldName,
+            FieldTypeId: form.FieldTypeId,
+            Location: form.Location,
+            Status: form.Status,
+            Description: form.Description
+          });
+          
+          form.FieldId.value = fieldId;
+          form.FieldName.value = result.data.fieldName;
+          form.FieldTypeId.value = result.data.fieldTypeId;
+          form.Location.value = result.data.location;
+          form.Status.value = result.data.status;
+          form.Description.value = result.data.description || '';
+          form.OpeningTime.value = result.data.openingTime || '06:00';
+          form.ClosingTime.value = result.data.closingTime || '23:00';
+        } catch (formError) {
+          console.error('Error filling form:', formError);
+          alert('Lỗi khi điền form: ' + formError.message);
+          return;
+        }
+        
+        // Show current image if exists
+        try {
+          if (result.data.imageUrl) {
+            const imagePreview = document.getElementById('imagePreview');
+            const previewImg = document.getElementById('previewImg');
+            console.log('Image elements:', { imagePreview, previewImg });
+            previewImg.src = `/images/san/${result.data.imageUrl}`;
+            imagePreview.classList.remove('hidden');
+          }
+        } catch (imageError) {
+          console.error('Error handling image:', imageError);
+          // Don't show alert for image error, just log it
+        }
+        
+        // Show modal
+        try {
+          document.getElementById('fieldModal').classList.remove('hidden');
+          document.getElementById('modalTitle').textContent = 'Chỉnh sửa sân bóng';
+          document.getElementById('submitText').textContent = 'Cập nhật';
+        } catch (modalError) {
+          console.error('Error showing modal:', modalError);
+          alert('Lỗi khi hiển thị modal: ' + modalError.message);
+        }
+      } else {
+        alert('Không thể lấy thông tin sân: ' + result.message);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Có lỗi xảy ra khi lấy thông tin sân');
+    }
+  }
+  
+  async function deleteField(fieldId) {
+    if (!confirm('Bạn có chắc chắn muốn xóa sân này?')) {
+      return;
+    }
+    
+    try {
+      const response = await fetch(`/Admin/DeleteField/${fieldId}`, {
+        method: 'POST'
+      });
+      const result = await response.json();
+      
+      if (result.success) {
+        alert(result.message);
+        location.reload();
+      } else {
+        alert('Lỗi: ' + result.message);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Có lỗi xảy ra khi xóa sân');
+    }
+  }
+  
+  async function viewFieldDetails(fieldId) {
+    try {
+      const response = await fetch(`/Admin/GetField/${fieldId}`);
+      const result = await response.json();
+      
+      if (result.success) {
+        // Create a modal to show field details
+        const modal = document.createElement('div');
+        modal.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50';
+        modal.innerHTML = `
+          <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full">
+              <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                <h3 class="text-lg font-semibold text-gray-800">Chi tiết sân bóng</h3>
+                <button onclick="this.closest('.fixed').remove()" class="text-gray-400 hover:text-gray-600">
+                  <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+              </div>
+              <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Tên sân</label>
+                    <p class="text-sm text-gray-900">${result.data.fieldName}</p>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Loại sân</label>
+                    <p class="text-sm text-gray-900">${result.data.fieldTypeName}</p>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Vị trí</label>
+                    <p class="text-sm text-gray-900">${result.data.location}</p>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Trạng thái</label>
+                    <p class="text-sm text-gray-900">${result.data.status}</p>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Giá thuê/giờ</label>
+                    <p class="text-sm text-gray-900">${result.data.pricePerHour ? result.data.pricePerHour.toLocaleString('vi-VN') + '₫' : 'Sử dụng giá mặc định'}</p>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Giờ mở sân</label>
+                    <p class="text-sm text-gray-900">${result.data.openingTime || '06:00'}</p>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Giờ đóng sân</label>
+                    <p class="text-sm text-gray-900">${result.data.closingTime || '23:00'}</p>
+                  </div>
+                  <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Mô tả</label>
+                    <p class="text-sm text-gray-900">${result.data.description || 'Không có mô tả'}</p>
+                  </div>
+                  ${result.data.imageUrl ? `
+                  <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Hình ảnh</label>
+                    <img src="/images/san/${result.data.imageUrl}" alt="${result.data.fieldName}" class="w-full h-48 object-cover rounded-lg border border-gray-200" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0yNCAyNEg0MFY0MEgyNFYyNFoiIGZpbGw9IiM5Q0EzQUYiLz4KPHBhdGggZD0iTTI4IDI4SDM2VjM2SDI4VjI4WiIgZmlsbD0iI0ZGRkZGRiIvPgo8L3N2Zz4K'">
+                  </div>
+                  ` : ''}
+                </div>
+                <div class="mt-6 flex justify-end">
+                  <button onclick="this.closest('.fixed').remove()" class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600">
+                    Đóng
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(modal);
+        
+        // Re-initialize Lucide icons for the new modal
+        if (typeof lucide !== 'undefined') {
+          lucide.createIcons();
+        }
+      } else {
+        alert('Không thể lấy thông tin sân: ' + result.message);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Có lỗi xảy ra khi lấy thông tin sân');
+    }
+  }
+  
+  function closeFieldModal() {
+    document.getElementById('fieldModal').classList.add('hidden');
+  }
+  
+  // Handle image preview
+  document.getElementById('imageFile').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    const preview = document.getElementById('imagePreview');
+    const previewImg = document.getElementById('previewImg');
+    
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        previewImg.src = e.target.result;
+        preview.classList.remove('hidden');
+      };
+      reader.readAsDataURL(file);
+    } else {
+      preview.classList.add('hidden');
+    }
+  });
+
+  // Handle form submission
+  document.getElementById('fieldForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    try {
+      const url = isEditMode ? '/Admin/UpdateField' : '/Admin/CreateField';
+      const response = await fetch(url, {
+        method: 'POST',
+        body: formData
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        showToastAndReload('success', 'Thành công!', result.message);
+        closeFieldModal();
+      } else {
+        showToast('error', 'Thất bại!', 'Lỗi: ' + result.message);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      showToast('error', 'Thất bại!', 'Có lỗi xảy ra khi lưu thông tin sân');
+    }
+  });
+  
+  // Close modal when clicking outside
+  document.getElementById('fieldModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+      closeFieldModal();
+    }
+  });
+
+  // Tab switching functionality
+  function switchTab(tabName) {
+    // Hide all tab contents
+    document.querySelectorAll('.tab-content').forEach(content => {
+      content.classList.add('hidden');
+    });
+    
+    // Remove active class from all tab buttons
+    document.querySelectorAll('.tab-button').forEach(button => {
+      button.classList.remove('active', 'border-green-500', 'text-green-600');
+      button.classList.add('border-transparent', 'text-gray-500');
+    });
+    
+    // Show selected tab content
+    document.getElementById(tabName + '-content').classList.remove('hidden');
+    
+    // Add active class to selected tab button
+    const activeButton = document.getElementById(tabName + '-tab');
+    activeButton.classList.add('active', 'border-green-500', 'text-green-600');
+    activeButton.classList.remove('border-transparent', 'text-gray-500');
+    
+    // Load data for pricing tab if needed
+    if (tabName === 'pricing') {
+      loadFieldTypesForPricing();
+      loadPricingRules();
+    }
+  }
+
+  // Pricing Rules Management
+  let isPricingEditMode = false;
+  let currentPricingRuleId = null;
+
+  async function loadFieldTypesForPricing() {
+    try {
+      const response = await fetch('/Admin/GetFieldTypesForPricing');
+      const result = await response.json();
+      
+      if (result.success) {
+        const fieldTypeSelects = ['pricingFieldTypeFilter', 'pricingFieldTypeId'];
+        fieldTypeSelects.forEach(selectId => {
+          const select = document.getElementById(selectId);
+          if (select) {
+            // Clear existing options except first
+            select.innerHTML = selectId === 'pricingFieldTypeFilter' ? 
+              '<option value="">Tất cả loại sân</option>' : 
+              '<option value="">Chọn loại sân</option>';
+            
+            result.data.forEach(fieldType => {
+              const option = document.createElement('option');
+              option.value = fieldType.fieldTypeId;
+              option.textContent = `Sân ${fieldType.playerCount} người`;
+              select.appendChild(option);
+            });
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Error loading field types:', error);
+    }
+  }
+
+  async function loadPricingRules() {
+    try {
+      console.log('Loading pricing rules...');
+      const fieldTypeId = document.getElementById('pricingFieldTypeFilter').value;
+      const dayOfWeek = document.getElementById('pricingDayFilter').value;
+      const status = document.getElementById('pricingStatusFilter').value;
+      
+      let url = '/Admin/GetPricingRules';
+      const params = new URLSearchParams();
+      if (fieldTypeId) params.append('fieldTypeId', fieldTypeId);
+      if (dayOfWeek) params.append('dayOfWeek', dayOfWeek);
+      if (status) params.append('status', status);
+      
+      if (params.toString()) {
+        url += '?' + params.toString();
+      }
+      
+      console.log('Fetching URL:', url);
+      const response = await fetch(url);
+      const result = await response.json();
+      
+      console.log('Pricing rules response:', result);
+      
+      if (result.success) {
+        console.log('Displaying pricing rules:', result.data);
+        displayPricingRules(result.data);
+      } else {
+        console.error('Error loading pricing rules:', result.message);
+        alert('Lỗi khi tải danh sách quy tắc giá: ' + result.message);
+      }
+    } catch (error) {
+      console.error('Error loading pricing rules:', error);
+      alert('Có lỗi xảy ra khi tải danh sách quy tắc giá');
+    }
+  }
+
+  function displayPricingRules(pricingRules) {
+    console.log('Displaying pricing rules:', pricingRules);
+    const tbody = document.getElementById('pricingRulesTableBody');
+    if (!tbody) {
+      console.error('Pricing rules table body not found!');
+      return;
+    }
+    
+    tbody.innerHTML = '';
+    
+    if (pricingRules.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" class="px-6 py-4 text-center text-gray-500">Không có quy tắc giá nào</td></tr>';
+      return;
+    }
+    
+    pricingRules.forEach(rule => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${rule.fieldTypeName || 'N/A'}</td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${getDayName(rule.dayOfWeek)}</td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${formatTime(rule.startTime)} - ${formatTime(rule.endTime)}</td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${formatCurrency(rule.price)}</td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+          ${rule.isPeakHour ? 
+            `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+              <i data-lucide="trending-up" class="w-3 h-3 mr-1"></i>
+              ${rule.peakMultiplier}x
+            </span>` : 
+            '<span class="text-gray-400">-</span>'
+          }
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+          <div class="text-xs">
+            <div>Từ: ${formatDate(rule.effectiveFrom)}</div>
+            ${rule.effectiveTo ? `<div>Đến: ${formatDate(rule.effectiveTo)}</div>` : '<div class="text-green-600">Vĩnh viễn</div>'}
+          </div>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+          <button onclick="editPricingRule(${rule.pricingRuleId})" class="text-indigo-600 hover:text-indigo-900 mr-3">
+            <i data-lucide="edit" class="w-4 h-4"></i>
+          </button>
+          <button onclick="deletePricingRule(${rule.pricingRuleId})" class="text-red-600 hover:text-red-900">
+            <i data-lucide="trash-2" class="w-4 h-4"></i>
+          </button>
+        </td>
+      `;
+      tbody.appendChild(row);
+    });
+    
+    // Re-initialize Lucide icons
+    if (typeof lucide !== 'undefined') {
+      lucide.createIcons();
+    }
+  }
+
+  function getDayName(dayOfWeek) {
+    const days = ['', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'Chủ nhật'];
+    return days[dayOfWeek] || 'N/A';
+  }
+
+  function formatCurrency(amount) {
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND'
+    }).format(amount);
+  }
+
+  function formatDate(dateString) {
+    return new Date(dateString).toLocaleDateString('vi-VN');
+  }
+
+  function formatTime(timeString) {
+    // Handle both TimeSpan format (HH:mm:ss) and direct time format
+    if (timeString && timeString.includes(':')) {
+      const timeParts = timeString.split(':');
+      return `${timeParts[0]}:${timeParts[1]}`;
+    }
+    return timeString || 'N/A';
+  }
+
+  function clearPricingFilters() {
+    document.getElementById('pricingFieldTypeFilter').value = '';
+    document.getElementById('pricingDayFilter').value = '';
+    document.getElementById('pricingStatusFilter').value = '';
+    loadPricingRules();
+  }
+
+  function openAddPricingRuleModal() {
+    isPricingEditMode = false;
+    currentPricingRuleId = null;
+    document.getElementById('pricingRuleModal').classList.remove('hidden');
+    document.getElementById('pricingModalTitle').textContent = 'Thêm quy tắc giá mới';
+    document.getElementById('pricingSubmitText').textContent = 'Thêm quy tắc';
+    document.getElementById('pricingRuleForm').reset();
+    document.getElementById('pricingRuleId').value = '0';
+    
+    // Set default effective from date to today
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('pricingEffectiveFrom').value = today;
+  }
+
+  async function editPricingRule(pricingRuleId) {
+    try {
+      const response = await fetch(`/Admin/GetPricingRule/${pricingRuleId}`);
+      const result = await response.json();
+      
+      if (result.success) {
+        isPricingEditMode = true;
+        currentPricingRuleId = pricingRuleId;
+        
+        // Fill form with pricing rule data
+        document.getElementById('pricingRuleId').value = result.data.pricingRuleId;
+        document.getElementById('pricingFieldTypeId').value = result.data.fieldTypeId;
+        document.getElementById('pricingDayOfWeek').value = result.data.dayOfWeek;
+        document.getElementById('pricingStartTime').value = result.data.startTime;
+        document.getElementById('pricingEndTime').value = result.data.endTime;
+        document.getElementById('pricingPrice').value = result.data.price;
+        document.getElementById('pricingIsPeakHour').checked = result.data.isPeakHour;
+        document.getElementById('pricingPeakMultiplier').value = result.data.peakMultiplier;
+        document.getElementById('pricingEffectiveFrom').value = result.data.effectiveFrom;
+        document.getElementById('pricingEffectiveTo').value = result.data.effectiveTo || '';
+        
+        document.getElementById('pricingRuleModal').classList.remove('hidden');
+        document.getElementById('pricingModalTitle').textContent = 'Chỉnh sửa quy tắc giá';
+        document.getElementById('pricingSubmitText').textContent = 'Cập nhật';
+      } else {
+        alert('Không thể lấy thông tin quy tắc giá: ' + result.message);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Có lỗi xảy ra khi lấy thông tin quy tắc giá');
+    }
+  }
+
+  async function deletePricingRule(pricingRuleId) {
+    if (!confirm('Bạn có chắc chắn muốn xóa quy tắc giá này?')) {
+      return;
+    }
+    
+    try {
+      console.log('Deleting pricing rule:', pricingRuleId);
+      const response = await fetch(`/Admin/DeletePricingRule/${pricingRuleId}`, {
+        method: 'DELETE'
+      });
+      const result = await response.json();
+      
+      console.log('Delete response:', result);
+      
+      if (result.success) {
+        alert(result.message);
+        console.log('Reloading pricing rules...');
+        await loadPricingRules();
+        console.log('Pricing rules reloaded');
+      } else {
+        alert('Lỗi: ' + result.message);
+      }
+    } catch (error) {
+      console.error('Error deleting pricing rule:', error);
+      alert('Có lỗi xảy ra khi xóa quy tắc giá');
+    }
+  }
+
+  function closePricingRuleModal() {
+    document.getElementById('pricingRuleModal').classList.add('hidden');
+  }
+
+  // Handle pricing rule form submission
+  document.getElementById('pricingRuleForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData.entries());
+    
+    // Convert form data to proper types
+    const pricingRuleData = {
+      PricingRuleId: parseInt(data.PricingRuleId) || 0,
+      FieldTypeId: parseInt(data.FieldTypeId),
+      DayOfWeek: parseInt(data.DayOfWeek),
+      StartTime: data.StartTime,
+      EndTime: data.EndTime,
+      Price: parseFloat(data.Price),
+      IsPeakHour: data.IsPeakHour === 'on',
+      PeakMultiplier: parseFloat(data.PeakMultiplier) || 1.0,
+      EffectiveFrom: data.EffectiveFrom,
+      EffectiveTo: data.EffectiveTo || null
+    };
+    
+    try {
+      const url = isPricingEditMode ? '/Admin/UpdatePricingRule' : '/Admin/CreatePricingRule';
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(pricingRuleData)
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        alert(result.message);
+        closePricingRuleModal();
+        loadPricingRules();
+      } else {
+        alert('Lỗi: ' + result.message);
+        if (result.errors) {
+          console.error('Validation errors:', result.errors);
+        }
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Có lỗi xảy ra khi lưu quy tắc giá');
+    }
+  });
+
+  // Close pricing modal when clicking outside
+  document.getElementById('pricingRuleModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+      closePricingRuleModal();
+    }
+  });
+</script>

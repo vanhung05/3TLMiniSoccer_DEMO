@@ -1,0 +1,428 @@
+@model dynamic
+
+@{
+    ViewData["Title"] = "Thanh toán";
+    var paymentMethod = ViewBag.PaymentMethod as string;
+}
+
+<section class="py-16 bg-gray-50">
+    <div class="container mx-auto px-4">
+        <div class="max-w-4xl mx-auto">
+            <!-- Header -->
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-gray-900 mb-4">Thanh toán đặt sân</h1>
+                <p class="text-lg text-gray-600">Quét QR Code để thanh toán</p>
+            </div>
+
+            <div class="grid lg:grid-cols-2 gap-8">
+                <!-- Payment Info -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h2 class="text-xl font-bold mb-6 text-gray-900">Thông tin thanh toán</h2>
+                    
+                    <div class="space-y-4">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Sân bóng:</span>
+                            <span class="font-medium">@Model.FieldName</span>
+                        </div>
+                        
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Ngày đặt:</span>
+                            <span class="font-medium">@Model.BookingDate.ToString("dd/MM/yyyy")</span>
+                        </div>
+                        
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Thời gian:</span>
+                            <span class="font-medium">@Model.StartTime.ToString(@"hh\:mm") - @Model.EndTime.ToString(@"hh\:mm")</span>
+                        </div>
+                        
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Thời gian:</span>
+                            <span class="font-medium">@Model.Duration phút (@((Model.Duration / 60.0).ToString("F1")) giờ)</span>
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <div class="flex justify-between text-lg font-bold text-green-600">
+                            <span>Tổng cộng:</span>
+                            <span>@Model.TotalPrice.ToString("N0") VND</span>
+                        </div>
+                    </div>
+
+                    <!-- Payment Instructions -->
+                    <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <h3 class="font-medium text-blue-900 mb-2">Hướng dẫn thanh toán:</h3>
+                        <ol class="text-sm text-blue-800 space-y-1 list-decimal list-inside">
+                            <li>Mở ứng dụng ngân hàng trên điện thoại</li>
+                            <li>Quét QR Code bên cạnh</li>
+                            <li>Kiểm tra thông tin và xác nhận thanh toán</li>
+                            <li>Nhấn "Hoàn thành thanh toán" sau khi chuyển khoản</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <!-- QR Code -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-bold text-gray-900">QR Code thanh toán</h2>
+                        <div class="bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 text-red-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <span class="text-red-700 font-medium">Thời gian còn lại:</span>
+                                <span id="paymentTimer" class="text-red-800 font-bold ml-2">10:00</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- QR Code Display -->
+                    <div class="text-center">
+                        <div class="bg-white border-2 border-gray-200 rounded-lg p-8 inline-block mb-4">
+                            @if (!string.IsNullOrEmpty(ViewBag.QRCodeUrl))
+                            {
+                                <img src="@ViewBag.QRCodeUrl" alt="QR Code thanh toán" class="w-64 h-64 mx-auto">
+                            }
+                            else
+                            {
+                                <div class="w-64 h-64 bg-gray-100 rounded-lg flex items-center justify-center">
+                                    <div class="text-center">
+                                        <svg class="w-32 h-32 mx-auto mb-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v12a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm2 1v10h10V5H5z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        <p class="text-sm text-gray-500">QR Code đang được tạo...</p>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                        
+                        <p class="text-sm text-gray-600 mb-4">
+                            Quét QR Code bằng ứng dụng ngân hàng để thanh toán
+                        </p>
+                        
+                        @if (!string.IsNullOrEmpty(ViewBag.OrderId))
+                        {
+                            <p class="text-xs text-gray-500">
+                                Mã đơn hàng: @ViewBag.OrderId
+                            </p>
+                        }
+                    </div>
+
+                    <!-- Bank Info -->
+                    <div class="bg-gray-50 rounded-lg p-4 mb-6">
+                        <h3 class="font-medium text-gray-900 mb-3">Thông tin chuyển khoản:</h3>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Ngân hàng:</span>
+                                <span class="font-medium">@(ViewBag.BankName ?? "Mbbank")</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Số tài khoản:</span>
+                                <span class="font-medium">@(ViewBag.AccountNumber ?? "0353425450")</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Chủ tài khoản:</span>
+                                <span class="font-medium">@(ViewBag.AccountName ?? "NGUYEN VAN HUNG")</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Nội dung:</span>
+                                <span class="font-medium">@Model.FieldName - @Model.BookingDate.ToString("ddMMyyyy")</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="space-y-3">
+                        <form asp-controller="Field" asp-action="CompletePayment" method="post">
+                            <input type="hidden" name="orderId" value="@ViewBag.OrderId" />
+                            <button type="submit" class="w-full bg-green-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-green-700 transition-colors">
+                                Hoàn thành thanh toán
+                            </button>
+                        </form>
+                        
+                        <!-- Test Payment Button (Development Only) -->
+                        @if (ViewBag.TestMode == true)
+                        {
+                            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-3">
+                                <p class="text-xs text-yellow-800 mb-2">🔧 Chế độ phát triển:</p>
+                                <button onclick="simulatePayment()" class="w-full bg-yellow-500 text-white py-2 px-4 rounded-lg font-medium hover:bg-yellow-600 transition-colors text-sm">
+                                    🧪 Test Thanh Toán (Giả lập)
+                                </button>
+                                <p class="text-xs text-yellow-700 mt-1">Chỉ dùng để test - không cần chuyển khoản thực tế</p>
+                            </div>
+                        }
+                        
+                        <a href="@Url.Action("ConfirmBooking")" class="w-full bg-gray-200 text-gray-800 py-3 px-6 rounded-lg font-medium hover:bg-gray-300 transition-colors text-center block">
+                            Quay lại
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Status -->
+            <div class="mt-8 bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+                <div class="flex items-center">
+                    <div class="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center mr-4">
+                        <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="font-medium text-yellow-900">Lưu ý quan trọng</h3>
+                        <p class="text-sm text-yellow-800 mt-1">
+                            Sau khi thanh toán thành công, đặt sân của bạn sẽ được gửi đến admin để duyệt. 
+                            Chúng tôi sẽ liên hệ với bạn để xác nhận trong vòng 24 giờ.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        let timeLeft = 600; // Default 10 minutes in seconds
+        let paymentCheckInterval;
+        let orderId = '@ViewBag.OrderId';
+        let paymentCompleted = false;
+        
+        // Calculate remaining time from ExpiredAt
+        @if (ViewBag.ExpiredAt != null)
+        {
+            <text>
+            // Try different formats
+            const expiredAtLocal = '@ViewBag.ExpiredAt';
+            const expiredAtISO = '@ViewBag.ExpiredAtISO';
+            const expiredAtUTC = '@ViewBag.ExpiredAtUTC';
+            
+            console.log('ExpiredAt (local):', expiredAtLocal);
+            console.log('ExpiredAt (ISO):', expiredAtISO);
+            console.log('ExpiredAt (UTC):', expiredAtUTC);
+            
+            // Try parsing different formats
+            let expiredAt = null;
+            let parsedSuccessfully = false;
+            
+            // Try UTC format first (most reliable)
+            if (expiredAtUTC && expiredAtUTC !== '') {
+                expiredAt = new Date(expiredAtUTC);
+                if (!isNaN(expiredAt.getTime())) {
+                    parsedSuccessfully = true;
+                    console.log('Successfully parsed UTC format');
+                }
+            }
+            
+            // Try ISO format
+            if (!parsedSuccessfully && expiredAtISO && expiredAtISO !== '') {
+                expiredAt = new Date(expiredAtISO);
+                if (!isNaN(expiredAt.getTime())) {
+                    parsedSuccessfully = true;
+                    console.log('Successfully parsed ISO format');
+                }
+            }
+            
+            // Try local format as last resort
+            if (!parsedSuccessfully && expiredAtLocal && expiredAtLocal !== '') {
+                expiredAt = new Date(expiredAtLocal);
+                if (!isNaN(expiredAt.getTime())) {
+                    parsedSuccessfully = true;
+                    console.log('Successfully parsed local format');
+                }
+            }
+            
+            if (parsedSuccessfully && expiredAt) {
+                const now = new Date();
+                const remainingSeconds = Math.max(0, Math.floor((expiredAt - now) / 1000));
+                timeLeft = remainingSeconds;
+                
+                console.log('ExpiredAt parsed:', expiredAt);
+                console.log('Now:', now);
+                console.log('Time difference (ms):', expiredAt - now);
+                console.log('Remaining seconds:', remainingSeconds);
+            } else {
+                console.error('Failed to parse any time format, using default 10 minutes');
+            }
+            </text>
+        }
+
+        // Timer countdown
+        function updateTimer() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            const timerElement = document.getElementById('paymentTimer');
+            
+            if (timerElement) {
+                timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+
+            if (timeLeft <= 0) {
+                clearInterval(paymentCheckInterval);
+                clearInterval(timerInterval);
+                showPaymentTimeout();
+                return;
+            }
+
+            timeLeft--;
+        }
+
+        // Check payment status
+        async function checkPaymentStatus() {
+            if (paymentCompleted) return;
+
+            try {
+                const response = await fetch('/Field/CheckPaymentStatus', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `orderId=${encodeURIComponent(orderId)}`
+                });
+
+                const result = await response.json();
+                
+                if (result.success && result.status === 'completed') {
+                    paymentCompleted = true;
+                    clearInterval(paymentCheckInterval);
+                    clearInterval(timerInterval);
+                    showPaymentSuccess(result);
+                }
+            } catch (error) {
+                console.error('Error checking payment status:', error);
+            }
+        }
+
+        // Show payment success
+        function showPaymentSuccess(result) {
+            const successDiv = document.createElement('div');
+            successDiv.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+            successDiv.innerHTML = `
+                <div class="bg-white rounded-lg p-8 max-w-md mx-4 text-center">
+                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Thanh toán thành công!</h3>
+                    <p class="text-gray-600 mb-4">Giao dịch của bạn đã được xử lý thành công.</p>
+                    <div class="space-y-2 text-sm text-gray-500 mb-6">
+                        <p><strong>Mã giao dịch:</strong> ${result.transactionId || 'N/A'}</p>
+                        <p><strong>Số tiền:</strong> ${formatNumber(result.amount || 0)} VND</p>
+                        <p><strong>Thời gian:</strong> ${result.paymentDate || result.transactionDate || new Date().toLocaleString('vi-VN')}</p>
+                    </div>
+                    <button onclick="window.location.href='/Field/BookingSuccess'" 
+                            class="w-full bg-green-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-green-700 transition-colors">
+                        Xem chi tiết đặt sân
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(successDiv);
+        }
+
+        // Show payment timeout
+        function showPaymentTimeout() {
+            const timeoutDiv = document.createElement('div');
+            timeoutDiv.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+            timeoutDiv.innerHTML = `
+                <div class="bg-white rounded-lg p-8 max-w-md mx-4 text-center">
+                    <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Hết thời gian thanh toán</h3>
+                    <p class="text-gray-600 mb-4">Phiên thanh toán đã hết hạn. Vui lòng thực hiện lại.</p>
+                    <button onclick="window.location.href='/Field/ConfirmBooking'" 
+                            class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors">
+                        Thử lại
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(timeoutDiv);
+        }
+
+        // Initialize timer and payment checking
+        document.addEventListener('DOMContentLoaded', function() {
+            // Start timer
+            const timerInterval = setInterval(updateTimer, 1000);
+            
+            // Start payment checking every 5 seconds
+            paymentCheckInterval = setInterval(checkPaymentStatus, 5000);
+            
+            // Initial timer update
+            updateTimer();
+        });
+
+        // Manual payment completion
+        document.querySelector('form').addEventListener('submit', function(e) {
+            if (paymentCompleted) {
+                return true;
+            }
+            
+            if (confirm('Bạn đã hoàn thành thanh toán chưa?')) {
+                // Check payment status immediately
+                checkPaymentStatus();
+                return true;
+            } else {
+                e.preventDefault();
+                alert('Vui lòng hoàn thành thanh toán trước khi nhấn nút này');
+                return false;
+            }
+        });
+
+        // Format số tiền
+        function formatNumber(number) {
+            return new Intl.NumberFormat('vi-VN').format(number);
+        }
+
+        // Simulate payment for testing
+        async function simulatePayment() {
+            if (confirm('Bạn có chắc muốn giả lập thanh toán thành công? (Chỉ dùng để test)')) {
+                try {
+                    // Show loading
+                    const button = event.target;
+                    const originalText = button.textContent;
+                    button.textContent = 'Đang xử lý...';
+                    button.disabled = true;
+
+                    // Call test payment API
+                    const response = await fetch('/Field/TestPayment', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: `orderId=${encodeURIComponent(orderId)}`
+                    });
+
+                    if (response.ok) {
+                        // Get the response to extract booking ID
+                        const responseData = await response.json();
+                        console.log('TestPayment response:', responseData);
+                        
+                        if (responseData.success && responseData.bookingId) {
+                            window.location.href = `/Field/BookingSuccess/${responseData.bookingId}`;
+                        } else if (responseData.success) {
+                            // If success but no bookingId, show message
+                            alert('Test thanh toán thành công nhưng không có ID booking. Vui lòng kiểm tra lại.');
+                            window.location.href = '/Field/Index';
+                        } else {
+                            // Show error message
+                            alert('Lỗi: ' + (responseData.message || 'Không xác định'));
+                        }
+                    } else {
+                        // Handle error
+                        const errorText = await response.text();
+                        alert('Có lỗi khi test thanh toán: ' + errorText);
+                    }
+                    
+                } catch (error) {
+                    console.error('Error simulating payment:', error);
+                    alert('Có lỗi khi giả lập thanh toán: ' + error.message);
+                } finally {
+                    // Restore button
+                    button.textContent = originalText;
+                    button.disabled = false;
+                }
+            }
+        }
+    </script>
+}

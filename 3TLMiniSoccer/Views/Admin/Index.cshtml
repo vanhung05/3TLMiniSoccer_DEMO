@@ -1,0 +1,317 @@
+@model _3TLMiniSoccer.ViewModels.DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<h1 class="text-2xl font-bold text-gray-800 mb-6">Dashboard</h1>
+
+<!-- Quick Stats -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+  <!-- Product Orders Today -->
+  <div class="bg-white rounded-lg shadow p-6">
+    <div class="flex items-center">
+      <div class="p-3 rounded-full bg-blue-100 text-blue-500">
+        <i data-lucide="shopping-bag" class="w-6 h-6"></i>
+      </div>
+      <div class="ml-4">
+        <p class="text-sm text-gray-500">Phiếu đặt hàng</p>
+        <p class="text-2xl font-bold">@Model.Stats.TodayProductOrders</p>
+        <p class="text-xs text-gray-400">Hôm nay</p>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Field Bookings Today -->
+  <div class="bg-white rounded-lg shadow p-6">
+    <div class="flex items-center">
+      <div class="p-3 rounded-full bg-green-100 text-green-500">
+        <i data-lucide="calendar-check" class="w-6 h-6"></i>
+      </div>
+      <div class="ml-4">
+        <p class="text-sm text-gray-500">Phiếu đặt sân</p>
+        <p class="text-2xl font-bold">@Model.Stats.TodayFieldBookings</p>
+        <p class="text-xs text-gray-400">Hôm nay</p>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Active Fields -->
+  <div class="bg-white rounded-lg shadow p-6">
+    <div class="flex items-center">
+      <div class="p-3 rounded-full bg-yellow-100 text-yellow-500">
+        <i data-lucide="stadium" class="w-6 h-6"></i>
+      </div>
+      <div class="ml-4">
+        <p class="text-sm text-gray-500">Sân đang hoạt động</p>
+        <p class="text-2xl font-bold">@Model.Stats.ActiveFields</p>
+        <p class="text-xs text-gray-400">Hiện tại</p>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Available Products -->
+  <div class="bg-white rounded-lg shadow p-6">
+    <div class="flex items-center">
+      <div class="p-3 rounded-full bg-purple-100 text-purple-500">
+        <i data-lucide="package" class="w-6 h-6"></i>
+      </div>
+      <div class="ml-4">
+        <p class="text-sm text-gray-500">Sản phẩm đang bán</p>
+        <p class="text-2xl font-bold">@Model.Stats.AvailableProducts</p>
+        <p class="text-xs text-gray-400">Hiện tại</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Analysis Boxes -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+  <!-- Today's Field Bookings -->
+  <div class="bg-white rounded-lg shadow p-6">
+    <h3 class="font-semibold text-lg mb-4">Lịch đặt sân hôm nay</h3>
+    <div class="space-y-4">
+      <div>
+        <p class="text-sm text-gray-500">Tổng số</p>
+        <p class="text-xl font-bold">@Model.Stats.TotalFieldBookingsToday</p>
+      </div>
+      <div>
+        <p class="text-sm text-gray-500">Doanh thu</p>
+        <p class="text-xl font-bold">@Model.Stats.TotalFieldRevenueToday.ToString("N0") ₫</p>
+      </div>
+      <div class="pt-2">
+        <div class="flex justify-between text-xs text-gray-500 mb-1">
+          <span>Hoàn thành (@Model.Stats.CompletedBookings)</span>
+          <span>@Model.Stats.CompletedPercentage.ToString("F0")%</span>
+        </div>
+        <div class="w-full bg-gray-200 rounded-full h-2">
+          <div class="bg-green-500 h-2 rounded-full" style="width: @Model.Stats.CompletedPercentage.ToString("F0")%"></div>
+        </div>
+        <div class="flex justify-between text-xs text-gray-500 mt-3 mb-1">
+          <span>Đã đặt cọc (@Model.Stats.DepositPaidBookings)</span>
+          <span>@Model.Stats.DepositPaidPercentage.ToString("F0")%</span>
+        </div>
+        <div class="w-full bg-gray-200 rounded-full h-2">
+          <div class="bg-blue-500 h-2 rounded-full" style="width: @Model.Stats.DepositPaidPercentage.ToString("F0")%"></div>
+        </div>
+        <div class="flex justify-between text-xs text-gray-500 mt-3 mb-1">
+          <span>Hủy đặt (@Model.Stats.CancelledBookings)</span>
+          <span>@Model.Stats.CancelledPercentage.ToString("F0")%</span>
+        </div>
+        <div class="w-full bg-gray-200 rounded-full h-2">
+          <div class="bg-red-500 h-2 rounded-full" style="width: @Model.Stats.CancelledPercentage.ToString("F0")%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Today's Orders -->
+  <div class="bg-white rounded-lg shadow p-6">
+    <h3 class="font-semibold text-lg mb-4">Đơn hàng hôm nay</h3>
+    <div class="space-y-4">
+      <div>
+        <p class="text-sm text-gray-500">Tổng số</p>
+        <p class="text-xl font-bold">@Model.Stats.TotalProductOrdersToday</p>
+      </div>
+      <div>
+        <p class="text-sm text-gray-500">Doanh thu</p>
+        <p class="text-xl font-bold">@Model.Stats.TotalProductRevenueToday.ToString("N0") ₫</p>
+      </div>
+      <div class="pt-2">
+        <div class="flex items-center mb-3">
+          <div class="w-3 h-3 rounded-full bg-green-500 mr-2"></div>
+          <span class="text-sm">Đã thanh toán</span>
+          <span class="text-sm font-medium ml-auto">@Model.Stats.PaidOrders (@Model.Stats.PaidPercentage.ToString("F0")%)</span>
+        </div>
+        <div class="flex items-center">
+          <div class="w-3 h-3 rounded-full bg-yellow-500 mr-2"></div>
+          <span class="text-sm">Chưa thanh toán</span>
+          <span class="text-sm font-medium ml-auto">@Model.Stats.UnpaidOrders (@Model.Stats.UnpaidPercentage.ToString("F0")%)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Customer Feedback -->
+  <div class="bg-white rounded-lg shadow p-6">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="font-semibold text-lg">Góp ý khách hàng</h3>
+      <button class="text-sm text-green-500 hover:underline">Xem thêm</button>
+    </div>
+    <div class="space-y-4">
+      @foreach (var feedback in Model.RecentFeedback)
+      {
+        <div class="flex items-start">
+          <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mr-3">
+            <i data-lucide="user" class="w-5 h-5 text-gray-500"></i>
+          </div>
+          <div>
+            <div class="flex items-center">
+              <span class="font-medium">@feedback.CustomerName</span>
+              <span class="text-xs text-gray-500 ml-2">@feedback.TimeAgo</span>
+            </div>
+            <p class="text-sm text-gray-600 mt-1">@feedback.Comment</p>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</div>
+
+<!-- Top Tables - Row 1 -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+  <!-- Top 3 Popular Fields -->
+  <div class="bg-white rounded-lg shadow overflow-hidden">
+    <div class="p-4 border-b">
+      <h3 class="font-semibold text-lg">Top 3 sân được đặt nhiều nhất</h3>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tên sân</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Giá</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Số lần đặt</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Doanh thu</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          @foreach (var field in Model.TopFields)
+          {
+            <tr>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">@field.Rank</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">@field.FieldName</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">@field.Price.ToString("N0") ₫</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">@field.BookingCount</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">@field.Revenue.ToString("N0") ₫</td>
+            </tr>
+          }
+          @if (!Model.TopFields.Any())
+          {
+            <tr>
+              <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">Chưa có dữ liệu</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+  
+  <!-- Top 3 Selling Products -->
+  <div class="bg-white rounded-lg shadow overflow-hidden">
+    <div class="p-4 border-b">
+      <h3 class="font-semibold text-lg">Top 3 sản phẩm bán chạy</h3>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tên sản phẩm</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Giá</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Số lượt bán</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Doanh thu</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          @foreach (var product in Model.TopProducts)
+          {
+            <tr>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">@product.Rank</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">@product.ProductName</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">@product.Price.ToString("N0") ₫</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">@product.SalesCount</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">@product.Revenue.ToString("N0") ₫</td>
+            </tr>
+          }
+          @if (!Model.TopProducts.Any())
+          {
+            <tr>
+              <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">Chưa có dữ liệu</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Top Tables - Row 2 -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  <!-- Top 5 Field Customers -->
+  <div class="bg-white rounded-lg shadow overflow-hidden">
+    <div class="p-4 border-b">
+      <h3 class="font-semibold text-lg">Top 5 khách đặt sân</h3>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Họ tên</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SĐT</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Số lượt đặt</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Doanh thu</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          @foreach (var customer in Model.TopFieldCustomers)
+          {
+            <tr>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">@customer.Rank</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">@customer.CustomerName</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">@customer.PhoneNumber</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">@customer.OrderCount</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">@customer.Revenue.ToString("N0") ₫</td>
+            </tr>
+          }
+          @if (!Model.TopFieldCustomers.Any())
+          {
+            <tr>
+              <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">Chưa có dữ liệu</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+  
+  <!-- Top 5 Product Customers -->
+  <div class="bg-white rounded-lg shadow overflow-hidden">
+    <div class="p-4 border-b">
+      <h3 class="font-semibold text-lg">Top 5 khách đặt hàng</h3>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Họ tên</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SĐT</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Số lượt đặt</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Doanh thu</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          @foreach (var customer in Model.TopProductCustomers)
+          {
+            <tr>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">@customer.Rank</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">@customer.CustomerName</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">@customer.PhoneNumber</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">@customer.OrderCount</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">@customer.Revenue.ToString("N0") ₫</td>
+            </tr>
+          }
+          @if (!Model.TopProductCustomers.Any())
+          {
+            <tr>
+              <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">Chưa có dữ liệu</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

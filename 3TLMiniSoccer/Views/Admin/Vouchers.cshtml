@@ -1,0 +1,477 @@
+@model _3TLMiniSoccer.ViewModels.VoucherAdminViewModel
+@{
+    ViewData["Title"] = "Mã giảm giá";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="flex-1 overflow-y-auto p-6 bg-gray-50">
+    <!-- Header Actions -->
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">Quản lý mã giảm giá</h1>
+        <div class="flex space-x-2">
+            <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+                <i data-lucide="download" class="w-4 h-4"></i>
+                <span>Xuất báo cáo</span>
+            </button>
+            <button class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2" onclick="openAddVoucherModal()">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+                <span>Thêm mã giảm giá</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-blue-100 text-blue-500">
+                    <i data-lucide="gift" class="w-6 h-6"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm text-gray-500">Tổng mã giảm giá</p>
+                    <p class="text-2xl font-bold">@Model.Statistics.TotalVouchers</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-green-100 text-green-500">
+                    <i data-lucide="check-circle" class="w-6 h-6"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm text-gray-500">Đang hoạt động</p>
+                    <p class="text-2xl font-bold">@Model.Statistics.ActiveVouchers</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-yellow-100 text-yellow-500">
+                    <i data-lucide="clock" class="w-6 h-6"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm text-gray-500">Sắp hết hạn</p>
+                    <p class="text-2xl font-bold">@Model.Statistics.ExpiringSoonVouchers</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-red-100 text-red-500">
+                    <i data-lucide="x-circle" class="w-6 h-6"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm text-gray-500">Đã hết hạn</p>
+                    <p class="text-2xl font-bold">@Model.Statistics.ExpiredVouchers</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters and Search -->
+    <div class="bg-white rounded-lg shadow p-4 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Tìm kiếm</label>
+                <input type="text" placeholder="Mã giảm giá, tên..." class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Loại giảm giá</label>
+                <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                    <option value="">Tất cả loại</option>
+                    <option value="percentage">Phần trăm</option>
+                    <option value="fixed">Số tiền cố định</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Trạng thái</label>
+                <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                    <option value="">Tất cả trạng thái</option>
+                    <option value="active">Đang hoạt động</option>
+                    <option value="expired">Đã hết hạn</option>
+                    <option value="inactive">Không hoạt động</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Ngày tạo</label>
+                <input type="date" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+            </div>
+            <div class="flex items-end">
+                <button class="w-full bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md">
+                    <i data-lucide="search" class="w-4 h-4 inline mr-2"></i>
+                    Tìm kiếm
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vouchers Table -->
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mã giảm giá</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tên</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Loại</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Giá trị</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Số lần sử dụng</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hạn sử dụng</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    @if (Model.Vouchers != null && Model.Vouchers.Count > 0)
+                    {
+                        @foreach (var voucher in Model.Vouchers)
+                        {
+                            var now = DateTime.Now;
+                            var isExpired = voucher.ValidTo < now;
+                            var isExpiringSoon = voucher.ValidTo <= now.AddDays(7) && voucher.ValidTo >= now;
+                            var isActive = voucher.IsActive && voucher.ValidFrom <= now && voucher.ValidTo >= now;
+                            
+                            string statusClass = "";
+                            string statusText = "";
+                            
+                            if (!voucher.IsActive)
+                            {
+                                statusClass = "bg-gray-100 text-gray-800";
+                                statusText = "Không hoạt động";
+                            }
+                            else if (isExpired)
+                            {
+                                statusClass = "bg-red-100 text-red-800";
+                                statusText = "Đã hết hạn";
+                            }
+                            else if (isExpiringSoon)
+                            {
+                                statusClass = "bg-yellow-100 text-yellow-800";
+                                statusText = "Sắp hết hạn";
+                            }
+                            else if (isActive)
+                            {
+                                statusClass = "bg-green-100 text-green-800";
+                                statusText = "Đang hoạt động";
+                            }
+                            else
+                            {
+                                statusClass = "bg-blue-100 text-blue-800";
+                                statusText = "Chưa bắt đầu";
+                            }
+                            
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">@voucher.Code</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">@voucher.Name</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    @(voucher.DiscountType == "Percentage" ? "Phần trăm" : "Số tiền cố định")
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    @if (voucher.DiscountType == "Percentage")
+                                    {
+                                        <text>@voucher.DiscountValue%</text>
+                                    }
+                                    else
+                                    {
+                                        <text>@voucher.DiscountValue.ToString("N0") ₫</text>
+                                    }
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    @voucher.UsedCount/@(voucher.UsageLimit?.ToString() ?? "∞")
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    @voucher.ValidTo.ToString("dd/MM/yyyy")
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full @statusClass">
+                                        @statusText
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <div class="flex space-x-2">
+                                        <button class="text-blue-600 hover:text-blue-900" onclick="viewVoucher(@voucher.DiscountCodeId)">
+                                            <i data-lucide="eye" class="w-4 h-4"></i>
+                                        </button>
+                                        <button class="text-green-600 hover:text-green-900" onclick="editVoucher(@voucher.DiscountCodeId)">
+                                            <i data-lucide="edit" class="w-4 h-4"></i>
+                                        </button>
+                                        <button class="text-red-600 hover:text-red-900" onclick="deleteVoucher(@voucher.DiscountCodeId)">
+                                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="8" class="px-6 py-4 text-center text-gray-500">
+                                Không có mã giảm giá nào
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+            <div class="flex-1 flex justify-between sm:hidden">
+                <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                    Trước
+                </a>
+                <a href="#" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                    Sau
+                </a>
+            </div>
+            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                <div>
+                    <p class="text-sm text-gray-700">
+                        Hiển thị <span class="font-medium">@((Model.Page - 1) * Model.PageSize + 1)</span> đến <span class="font-medium">@Math.Min(Model.Page * Model.PageSize, Model.TotalCount)</span> của <span class="font-medium">@Model.TotalCount</span> kết quả
+                    </p>
+                </div>
+                <div>
+                    <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                        <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                            <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                        </a>
+                        <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                            1
+                        </a>
+                        <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                            <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                        </a>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add/Edit Voucher Modal -->
+<div id="voucherModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-medium text-gray-900" id="modalTitle">Thêm mã giảm giá mới</h3>
+                <button onclick="closeVoucherModal()" class="text-gray-400 hover:text-gray-600">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            
+            <form id="voucherForm" class="space-y-4">
+                <input type="hidden" id="voucherId" name="DiscountCodeId" value="0">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Mã giảm giá *</label>
+                        <input type="text" id="voucherCode" name="Code" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="VD: WELCOME10">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Tên mã giảm giá *</label>
+                        <input type="text" id="voucherName" name="Name" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="VD: Giảm 10% cho khách mới">
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Loại giảm giá *</label>
+                        <select id="discountType" name="DiscountType" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                            <option value="">Chọn loại</option>
+                            <option value="Percentage">Phần trăm (%)</option>
+                            <option value="FixedAmount">Số tiền cố định (₫)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Giá trị *</label>
+                        <input type="number" id="discountValue" name="DiscountValue" step="0.01" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="VD: 10 hoặc 50000">
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Số lần sử dụng tối đa</label>
+                        <input type="number" id="usageLimit" name="UsageLimit" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Để trống = không giới hạn">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Đơn tối thiểu</label>
+                        <input type="number" id="minOrderAmount" name="MinOrderAmount" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Đơn tối thiểu để áp dụng">
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Ngày bắt đầu *</label>
+                        <input type="date" id="validFrom" name="ValidFrom" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Ngày kết thúc *</label>
+                        <input type="date" id="validTo" name="ValidTo" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Mô tả</label>
+                    <textarea id="description" name="Description" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Mô tả chi tiết về mã giảm giá..."></textarea>
+                </div>
+                
+                <div class="flex items-center">
+                    <input type="checkbox" id="isActive" name="IsActive" class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded" checked>
+                    <label for="isActive" class="ml-2 block text-sm text-gray-900">
+                        Kích hoạt mã giảm giá
+                    </label>
+                </div>
+                
+                <div class="flex justify-end space-x-3 pt-4">
+                    <button type="button" onclick="closeVoucherModal()" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+                        Hủy
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">
+                        Lưu mã giảm giá
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+        
+        // Voucher modal functions
+        function openAddVoucherModal() {
+            document.getElementById('modalTitle').textContent = 'Thêm mã giảm giá mới';
+            document.getElementById('voucherId').value = '0';
+            document.getElementById('voucherForm').reset();
+            document.getElementById('voucherModal').classList.remove('hidden');
+        }
+
+        async function viewVoucher(id) {
+            try {
+                const response = await fetch(`/Admin/GetVoucherDetails?id=${id}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const voucher = data.voucher;
+                    alert(`Mã giảm giá: ${voucher.code}\nTên: ${voucher.name}\nLoại: ${voucher.discountType}\nGiá trị: ${voucher.discountValue}\nSố lần sử dụng: ${voucher.usedCount}/${voucher.usageLimit || '∞'}\nHạn sử dụng: ${voucher.validTo}\nTrạng thái: ${voucher.isActive ? 'Hoạt động' : 'Không hoạt động'}`);
+                } else {
+                    alert('Không thể lấy thông tin mã giảm giá!');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi lấy thông tin mã giảm giá!');
+            }
+        }
+
+        async function editVoucher(id) {
+            try {
+                const response = await fetch(`/Admin/GetVoucherDetails?id=${id}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const voucher = data.voucher;
+                    document.getElementById('modalTitle').textContent = 'Chỉnh sửa mã giảm giá';
+                    document.getElementById('voucherId').value = voucher.id;
+                    document.getElementById('voucherCode').value = voucher.code;
+                    document.getElementById('voucherName').value = voucher.name;
+                    document.getElementById('discountType').value = voucher.discountType;
+                    document.getElementById('discountValue').value = voucher.discountValue;
+                    document.getElementById('usageLimit').value = voucher.usageLimit || '';
+                    document.getElementById('minOrderAmount').value = voucher.minOrderAmount || '';
+                    document.getElementById('validFrom').value = voucher.validFrom;
+                    document.getElementById('validTo').value = voucher.validTo;
+                    document.getElementById('description').value = voucher.description || '';
+                    document.getElementById('isActive').checked = voucher.isActive;
+                    
+                    document.getElementById('voucherModal').classList.remove('hidden');
+                } else {
+                    alert('Không thể lấy thông tin mã giảm giá!');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi lấy thông tin mã giảm giá!');
+            }
+        }
+
+        async function deleteVoucher(id) {
+            if (confirm('Bạn có chắc chắn muốn xóa mã giảm giá này?')) {
+                try {
+                    const response = await fetch('/Admin/DeleteVoucher', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ id: id })
+                    });
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        alert('Đã xóa mã giảm giá thành công!');
+                        location.reload();
+                    } else {
+                        alert(data.message || 'Có lỗi xảy ra khi xóa mã giảm giá!');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Có lỗi xảy ra khi xóa mã giảm giá!');
+                }
+            }
+        }
+
+        function closeVoucherModal() {
+            document.getElementById('voucherModal').classList.add('hidden');
+            document.getElementById('voucherForm').reset();
+        }
+
+        // Form submission
+        document.getElementById('voucherForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const voucherData = {
+                DiscountCodeId: parseInt(formData.get('DiscountCodeId')) || 0,
+                Code: formData.get('Code'),
+                Name: formData.get('Name'),
+                Description: formData.get('Description'),
+                DiscountType: formData.get('DiscountType'),
+                DiscountValue: parseFloat(formData.get('DiscountValue')),
+                MinOrderAmount: formData.get('MinOrderAmount') ? parseFloat(formData.get('MinOrderAmount')) : null,
+                MaxDiscountAmount: null,
+                UsageLimit: formData.get('UsageLimit') ? parseInt(formData.get('UsageLimit')) : null,
+                ValidFrom: new Date(formData.get('ValidFrom')),
+                ValidTo: new Date(formData.get('ValidTo')),
+                IsActive: formData.get('IsActive') === 'on'
+            };
+            
+            try {
+                const isEdit = voucherData.DiscountCodeId > 0;
+                const url = isEdit ? '/Admin/UpdateVoucher' : '/Admin/CreateVoucher';
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(voucherData)
+                });
+                
+                const data = await response.json();
+                    
+                if (data.success) {
+                    showToastAndReload('success', 'Thành công!', data.message || 'Đã lưu mã giảm giá thành công!');
+                    closeVoucherModal();
+                } else {
+                    showToast('error', 'Thất bại!', data.message || 'Có lỗi xảy ra khi lưu mã giảm giá!');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('error', 'Thất bại!', 'Có lỗi xảy ra khi lưu mã giảm giá!');
+            }
+        });
+    </script>
+}

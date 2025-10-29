@@ -1,0 +1,821 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - 3TL Mini Soccer</title>
+    <meta name="description" content="@ViewData["Description"]" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#16a34a',
+                        dark: '#0f172a',
+                        accent: '#f59e0b',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        @@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        /* Hero backgrounds for different pages */
+        .hero-home {
+            background-image: url('/images/trang_chu.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            height: 70vh;
+        }
+        
+        .hero-about {
+            background-image: url('/images/about_hero.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            min-height: 70vh;
+        }
+        
+        .hero-contact {
+            background-image: url('/images/contact_hero.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            min-height: 70vh;
+        }
+        
+        .hero-field {
+            background-image: url('/images/field_hero.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            min-height: 70vh;
+        }
+        
+        /* Fallback for pages without specific hero */
+        .hero-gradient {
+            background: linear-gradient(135deg, #16a34a 0%, #15803d 50%, #166534 100%);
+            min-height: 70vh;
+        }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+
+        .mobile-menu {
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .mobile-menu.open {
+            transform: translateX(0);
+        }
+        
+        .dropdown-menu {
+            display: block;
+            transition: all 0.2s ease-in-out;
+            opacity: 0;
+            transform: translateY(-10px);
+            visibility: hidden; 
+            pointer-events: none;
+            position: absolute;
+            z-index: 1000;
+        }
+        
+        .dropdown-menu.show {
+            opacity: 1;
+            transform: translateY(0);
+            visibility: visible;
+            pointer-events: auto;
+        }
+        
+        .dropdown {
+            position: relative;
+        }
+        
+        .dropdown:hover .dropdown-menu {
+            opacity: 1;
+            transform: translateY(0);
+            visibility: visible;
+            pointer-events: auto;
+        }
+        
+        /* Tạo cầu nối vô hình giữa button và menu */
+        .dropdown::before {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            height: 10px;
+            background: transparent;
+            z-index: 999;
+        }
+        
+        /* Đảm bảo dropdown menu luôn hiển thị trên các element khác */
+        .dropdown-menu a {
+            display: block;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        
+        .dropdown-menu a:hover {
+            background-color: #f3f4f6;
+        }
+        
+        @@keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Slider styles */
+        .slider-container {
+            position: relative;
+            width: 100%;
+            height: 350px;
+            overflow: hidden;
+            border-radius: 12px;
+        }
+        
+        .slider-wrapper {
+            display: flex;
+            width: 500%;
+            height: 100%;
+            transition: transform 0.8s ease-in-out;
+        }
+        
+        .slider-slide {
+            width: 20%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+        
+        .slider-slide::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, rgba(22, 163, 74, 0.3), rgba(15, 23, 42, 0.3));
+        }
+        
+        .slider-dots {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+        }
+        
+        .slider-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .slider-dot.active {
+            background: white;
+            transform: scale(1.2);
+        }
+        
+        /* Typing effect styles */
+        .typing-text {
+            position: relative;
+        }
+        
+        .typing-text::after {
+            content: '|';
+            color: white;
+            animation: blink-caret 0.75s step-end infinite;
+        }
+        
+        @@keyframes blink-caret {
+            from, to { opacity: 1; }
+            50% { opacity: 0; }
+        }
+        
+        /* Button shake animation */
+        .shake-button {
+            animation: shake 1.5s ease-in-out infinite;
+        }
+        
+        @@keyframes shake {
+            0%, 100% { transform: translateX(0) translateY(0) rotate(0deg); }
+            5% { transform: translateX(-3px) translateY(-1px) rotate(-1deg); }
+            10% { transform: translateX(3px) translateY(1px) rotate(1deg); }
+            15% { transform: translateX(-3px) translateY(1px) rotate(-1deg); }
+            20% { transform: translateX(3px) translateY(-1px) rotate(1deg); }
+            25% { transform: translateX(-2px) translateY(0) rotate(-0.5deg); }
+            30% { transform: translateX(2px) translateY(0) rotate(0.5deg); }
+            35% { transform: translateX(-1px) translateY(0) rotate(-0.25deg); }
+            40% { transform: translateX(1px) translateY(0) rotate(0.25deg); }
+            45% { transform: translateX(0) translateY(0) rotate(0deg); }
+        }
+        
+        /* Counter animation */
+        .counter {
+            display: inline-block;
+            font-weight: bold;
+        }
+        
+        .placeholder-img {
+            background: linear-gradient(45deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%);
+            background-size: 200% 200%;
+            animation: shimmer 2s infinite linear;
+        }
+        
+        @@keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        
+        /* Slider styles */
+        .slider-container {
+            position: relative;
+            width: 100%;
+            height: 350px;
+            overflow: hidden;
+            border-radius: 12px;
+        }
+        
+        .slider-wrapper {
+            display: flex;
+            width: 500%;
+            height: 100%;
+            transition: transform 0.8s ease-in-out;
+        }
+        
+        .slider-slide {
+            width: 20%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+        
+        .slider-slide::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, rgba(22, 163, 74, 0.3), rgba(15, 23, 42, 0.3));
+        }
+        
+        .slider-dots {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+        }
+        
+        .slider-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .slider-dot.active {
+            background: white;
+            transform: scale(1.2);
+        }
+        
+        /* Typing effect styles */
+        .typing-text {
+            position: relative;
+        }
+        
+        .typing-text::after {
+            content: '|';
+            color: white;
+            animation: blink-caret 0.75s step-end infinite;
+        }
+        
+        @@keyframes blink-caret {
+            from, to { opacity: 1; }
+            50% { opacity: 0; }
+        }
+        
+        /* Button shake animation */
+        .shake-button {
+            animation: shake 1.5s ease-in-out infinite;
+        }
+        
+        @@keyframes shake {
+            0%, 100% { transform: translateX(0) translateY(0) rotate(0deg); }
+            5% { transform: translateX(-3px) translateY(-1px) rotate(-1deg); }
+            10% { transform: translateX(3px) translateY(1px) rotate(1deg); }
+            15% { transform: translateX(-3px) translateY(1px) rotate(-1deg); }
+            20% { transform: translateX(3px) translateY(-1px) rotate(1deg); }
+            25% { transform: translateX(-2px) translateY(0) rotate(-0.5deg); }
+            30% { transform: translateX(2px) translateY(0) rotate(0.5deg); }
+            35% { transform: translateX(-1px) translateY(0) rotate(-0.25deg); }
+            40% { transform: translateX(1px) translateY(0) rotate(0.25deg); }
+            45% { transform: translateX(0) translateY(0) rotate(0deg); }
+        }
+        
+        /* Timeline styles */
+        .timeline-item:not(:last-child):after {
+            content: '';
+            position: absolute;
+            left: 1.25rem;
+            top: 2rem;
+            height: calc(100% + 2rem);
+            width: 2px;
+            background-color: #16a34a;
+        }
+        
+        /* Accordion styles */
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        
+        .accordion.active .accordion-content {
+            max-height: 500px;
+        }
+    </style>
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body class="font-sans bg-gray-50">
+    <!-- Header/Navigation -->
+    <header class="sticky top-0 z-50 bg-white shadow-sm">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex items-center justify-between">
+                <!-- Logo -->
+                <a asp-controller="Home" asp-action="Index" class="text-2xl font-bold text-primary">3TL Mini Soccer</a>
+                
+                <!-- Desktop Navigation -->
+                <nav class="hidden md:flex items-center space-x-8">
+                    <a asp-controller="Home" asp-action="Index" class="font-medium @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Home" ? "text-primary" : "hover:text-primary transition")">TRANG CHỦ</a>
+                    <a asp-controller="About" asp-action="Index" class="font-medium @(ViewContext.RouteData.Values["Controller"]?.ToString() == "About" ? "text-primary" : "hover:text-primary transition")">VỀ CHÚNG TÔI</a>
+                    <a asp-controller="Field" asp-action="Index" class="font-medium @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Field" ? "text-primary" : "hover:text-primary transition")">SÂN</a>
+                    <a asp-controller="Shop" asp-action="Index" class="font-medium @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Shop" ? "text-primary" : "hover:text-primary transition")">CỬA HÀNG</a>
+                    <a asp-controller="Contact" asp-action="Index" class="font-medium @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Contact" ? "text-primary" : "hover:text-primary transition")">LIÊN HỆ</a>
+                    
+                    <!-- Cart with badge -->
+                    <div class="relative">
+                        <a asp-controller="Cart" asp-action="Index" class="flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="9" cy="21" r="1"></circle>
+                                <circle cx="20" cy="21" r="1"></circle>
+                                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                            </svg>
+                            @await Component.InvokeAsync("CartCount")
+                        </a>
+                    </div>
+                    
+                    <!-- Auth buttons -->
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <div class="flex items-center space-x-4">
+                            <div class="relative dropdown">
+                                <button class="flex items-center space-x-2 text-gray-700 hover:text-primary transition">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                        <circle cx="12" cy="7" r="4"></circle>
+                                    </svg>
+                                    <span>@User.Identity.Name</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6,9 12,15 18,9"></polyline>
+                                    </svg>
+                                </button>
+                                 <div class="dropdown-menu absolute right-0 top-full w-48 bg-white rounded-lg shadow-lg py-2 z-50 border border-gray-200">
+                                     <a asp-controller="Cart" asp-action="Index" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline mr-2">
+                                             <circle cx="9" cy="21" r="1"></circle>
+                                             <circle cx="20" cy="21" r="1"></circle>
+                                             <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                                         </svg>
+                                         Giỏ hàng
+                                     </a>
+                                     <a asp-controller="Field" asp-action="BookingHistory" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline mr-2">
+                                             <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                         </svg>
+                                         Lịch sử đặt sân
+                                     </a>
+                                     <a asp-controller="Account" asp-action="Profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Thông tin cá nhân</a>
+                                     <a asp-controller="Account" asp-action="ChangePassword" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Đổi mật khẩu</a>
+                                    @if (User.IsInRole("Admin"))
+                                    {
+                                        <div class="border-t border-gray-200 my-1"></div>
+                                        <a href="/Admin" class="block px-4 py-2 text-sm text-green-600 hover:bg-green-50">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline mr-2">
+                                                <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                                                <path d="M2 17l10 5 10-5"></path>
+                                                <path d="M2 12l10 5 10-5"></path>
+                                            </svg>
+                                            Quản lý
+                                        </a>
+                                    }
+                                    <div class="border-t border-gray-200 my-1"></div>
+                                    <form asp-controller="Account" asp-action="Logout" method="post" class="block">
+                                        <button type="submit" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">Đăng xuất</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="flex items-center space-x-4">
+                            <a asp-controller="Account" asp-action="Login" class="font-medium hover:text-primary transition">ĐĂNG NHẬP</a>
+                            <a asp-controller="Account" asp-action="Register" class="bg-primary hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition">ĐĂNG KÝ</a>
+                        </div>
+                    }
+                </nav>
+                
+                <!-- Mobile menu button -->
+                <button id="mobile-menu-button" class="md:hidden focus:outline-none">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Mobile menu -->
+        <div id="mobile-menu" class="mobile-menu fixed inset-y-0 right-0 w-64 bg-white shadow-lg z-50 p-4">
+            <div class="flex justify-between items-center mb-6">
+                <span class="text-xl font-bold text-primary">3TL Mini Soccer</span>
+                <button id="close-mobile-menu" class="focus:outline-none">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            
+            <nav class="space-y-4">
+                <a asp-controller="Home" asp-action="Index" class="block font-medium hover:text-primary transition">TRANG CHỦ</a>
+                <a asp-controller="About" asp-action="Index" class="block font-medium hover:text-primary transition">VỀ CHÚNG TÔI</a>
+                <a asp-controller="Field" asp-action="Index" class="block font-medium @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Field" ? "text-primary" : "hover:text-primary transition")">SÂN</a>
+                <a asp-controller="Shop" asp-action="Index" class="block font-medium hover:text-primary transition">CỬA HÀNG</a>
+                <a asp-controller="Contact" asp-action="Index" class="block font-medium hover:text-primary transition">LIÊN HỆ</a>
+                
+                 @if (User.Identity?.IsAuthenticated == true)
+                 {
+                     <div class="pt-4 border-t border-gray-200 space-y-2">
+                         <a asp-controller="Field" asp-action="BookingHistory" class="block font-medium hover:text-primary transition">Lịch sử đặt sân</a>
+                         <a asp-controller="Account" asp-action="Profile" class="block font-medium hover:text-primary transition">Thông tin cá nhân</a>
+                         <a asp-controller="Account" asp-action="ChangePassword" class="block font-medium hover:text-primary transition">Đổi mật khẩu</a>
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <a href="/Admin" class="block font-medium text-green-600 hover:text-green-700 transition">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline mr-2">
+                                    <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                                    <path d="M2 17l10 5 10-5"></path>
+                                    <path d="M2 12l10 5 10-5"></path>
+                                </svg>
+                                Quản lý
+                            </a>
+                        }
+                        <form asp-controller="Account" asp-action="Logout" method="post" class="block">
+                            <button type="submit" class="w-full text-left font-medium text-red-600 hover:text-red-700 transition">Đăng xuất</button>
+                        </form>
+                    </div>
+                }
+                else
+                {
+                    <div class="pt-4 border-t border-gray-200 space-y-2">
+                        <a asp-controller="Account" asp-action="Login" class="block font-medium hover:text-primary transition">ĐĂNG NHẬP</a>
+                        <a asp-controller="Account" asp-action="Register" class="block bg-primary hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition text-center">ĐĂNG KÝ</a>
+                    </div>
+                }
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        @RenderBody()
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-8">
+        <div class="container mx-auto px-4">
+            <div class="grid md:grid-cols-4 gap-8 mb-6">
+                <!-- Column 1 -->
+                <div>
+                    <h3 class="text-xl font-bold mb-4">3TL Mini Soccer</h3>
+                    <address class="not-italic text-sm">
+                        <p class="mb-2">123 Đường ABC, Quận XYZ</p>
+                        <p class="mb-2">TP. Hồ Chí Minh</p>
+                        <p class="mb-2">Hotline: 0901 234 567</p>
+                        <p class="mb-2">Email: info@3tlsoccer.com</p>
+                    </address>
+                </div>
+                
+                <!-- Column 2 -->
+                <div>
+                    <h3 class="text-lg font-bold mb-4">Liên kết nhanh</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li><a asp-controller="Home" asp-action="Index" class="hover:text-primary transition">Trang chủ</a></li>
+                        <li><a asp-controller="About" asp-action="Index" class="hover:text-primary transition">Về chúng tôi</a></li>
+                        <li><a asp-controller="Field" asp-action="Index" class="hover:text-primary transition">Sân bóng</a></li>
+                        <li><a asp-controller="News" asp-action="Index" class="hover:text-primary transition">Tin tức</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Column 3 -->
+                <div>
+                    <h3 class="text-lg font-bold mb-4">Tài khoản</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li><a asp-controller="Account" asp-action="Login" class="hover:text-primary transition">Đăng nhập</a></li>
+                        <li><a asp-controller="Account" asp-action="Register" class="hover:text-primary transition">Đăng ký</a></li>
+                        <li><a asp-controller="Account" asp-action="ForgotPassword" class="hover:text-primary transition">Quên mật khẩu</a></li>
+                        <li><a href="#" class="hover:text-primary transition">Hỗ trợ</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Column 4 -->
+                <div>
+                    <h3 class="text-lg font-bold mb-4">Kết nối</h3>
+                    <div class="flex space-x-4">
+                        <a href="#" class="w-10 h-10 rounded-full bg-gray-700 hover:bg-primary flex items-center justify-center transition">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
+                            </svg>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-gray-700 hover:bg-primary flex items-center justify-center transition">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path>
+                            </svg>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-gray-700 hover:bg-primary flex items-center justify-center transition">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="pt-6 border-t border-gray-700 text-center text-gray-400 text-sm">
+                <p>&copy; 2023 3TL Mini Soccer. Tất cả quyền được bảo lưu.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize AOS animation
+        AOS.init({
+            duration: 800,
+            easing: 'ease-in-out',
+            once: true
+        });
+        
+        // Slider functionality
+        let currentSlide = 0;
+        const sliderWrapper = document.getElementById('slider-wrapper');
+        const dots = document.querySelectorAll('.slider-dot');
+        const totalSlides = 5;
+        
+        if (sliderWrapper && dots.length > 0) {
+            function updateSlider() {
+                const translateX = -currentSlide * 20; // 20% per slide
+                sliderWrapper.style.transform = `translateX(${translateX}%)`;
+                
+                // Update dots
+                dots.forEach((dot, index) => {
+                    dot.classList.toggle('active', index === currentSlide);
+                });
+            }
+            
+            function nextSlide() {
+                currentSlide = (currentSlide + 1) % totalSlides;
+                updateSlider();
+            }
+            
+            // Auto-slide every 4 seconds
+            setInterval(nextSlide, 4000);
+            
+            // Dot navigation
+            dots.forEach((dot, index) => {
+                dot.addEventListener('click', () => {
+                    currentSlide = index;
+                    updateSlider();
+                });
+            });
+        }
+        
+        // Typing effect
+        function typeWriter(element, text, speed = 50) {
+            let i = 0;
+            element.innerHTML = '';
+            element.classList.remove('typing-text'); // Remove cursor during typing
+            
+            function type() {
+                if (i < text.length) {
+                    element.innerHTML += text.charAt(i);
+                    i++;
+                    setTimeout(type, speed);
+                } else {
+                    // Add cursor back after typing is complete
+                    element.classList.add('typing-text');
+                }
+            }
+            
+            type();
+        }
+        
+        // Counter animation function
+        function animateCounter(element, target, duration = 2000, suffix = '+') {
+            const start = 0;
+            const increment = target / (duration / 16); // 60fps
+            let current = start;
+            
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    current = target;
+                    clearInterval(timer);
+                }
+                
+                if (target % 1 === 0) {
+                    // Integer
+                    element.textContent = Math.floor(current) + suffix;
+                } else {
+                    // Decimal
+                    element.textContent = current.toFixed(1) + suffix;
+                }
+            }, 16);
+        }
+        
+        // Initialize typing effect and counter animation when page loads
+        window.addEventListener('load', () => {
+            const typingElement = document.getElementById('typing-text');
+            if (typingElement) {
+                const originalText = typingElement.textContent;
+                
+                // Wait for AOS animation to complete
+                setTimeout(() => {
+                    typeWriter(typingElement, originalText, 30);
+                }, 1000);
+            }
+            
+            // Initialize counter animations
+            setTimeout(() => {
+                const counters = document.querySelectorAll('.counter');
+                counters.forEach(counter => {
+                    const target = parseFloat(counter.getAttribute('data-target'));
+                    const suffix = counter.getAttribute('data-suffix') || '+';
+                    animateCounter(counter, target, 2000, suffix);
+                });
+            }, 1500);
+        });
+        
+        // Dropdown menu with improved hover handling - support multiple dropdowns
+        const dropdowns = document.querySelectorAll('.dropdown');
+        
+        dropdowns.forEach(dropdown => {
+            const dropdownMenu = dropdown.querySelector('.dropdown-menu');
+            let dropdownTimeout;
+            let isHovering = false;
+            
+            if (dropdownMenu) {
+                // Show dropdown on hover
+                dropdown.addEventListener('mouseenter', () => {
+                    clearTimeout(dropdownTimeout);
+                    isHovering = true;
+                    dropdownMenu.classList.add('show');
+                });
+                
+                // Hide dropdown with delay on mouse leave
+                dropdown.addEventListener('mouseleave', () => {
+                    isHovering = false;
+                    dropdownTimeout = setTimeout(() => {
+                        if (!isHovering) {
+                            dropdownMenu.classList.remove('show');
+                        }
+                    }, 300);
+                });
+                
+                // Keep dropdown open when hovering over menu
+                dropdownMenu.addEventListener('mouseenter', () => {
+                    clearTimeout(dropdownTimeout);
+                    isHovering = true;
+                    dropdownMenu.classList.add('show');
+                });
+                
+                // Hide dropdown with delay when leaving menu
+                dropdownMenu.addEventListener('mouseleave', () => {
+                    isHovering = false;
+                    dropdownTimeout = setTimeout(() => {
+                        if (!isHovering) {
+                            dropdownMenu.classList.remove('show');
+                        }
+                    }, 300);
+                });
+                
+                // Also handle click to toggle (for mobile and desktop)
+                const dropdownButton = dropdown.querySelector('button');
+                if (dropdownButton) {
+                    dropdownButton.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
+                        // Close all other dropdowns first
+                        dropdowns.forEach(otherDropdown => {
+                            if (otherDropdown !== dropdown) {
+                                const otherMenu = otherDropdown.querySelector('.dropdown-menu');
+                                if (otherMenu) {
+                                    otherMenu.classList.remove('show');
+                                }
+                            }
+                        });
+                        
+                        // Toggle current dropdown
+                        if (dropdownMenu.classList.contains('show')) {
+                            dropdownMenu.classList.remove('show');
+                        } else {
+                            dropdownMenu.classList.add('show');
+                        }
+                    });
+                }
+                
+                // Handle clicks on dropdown links
+                const dropdownLinks = dropdownMenu.querySelectorAll('a');
+                dropdownLinks.forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        // Allow the link to work normally
+                        dropdownMenu.classList.remove('show');
+                    });
+                });
+            }
+        });
+        
+        // Close all dropdowns when clicking outside
+        document.addEventListener('click', (e) => {
+            dropdowns.forEach(dropdown => {
+                if (!dropdown.contains(e.target)) {
+                    const dropdownMenu = dropdown.querySelector('.dropdown-menu');
+                    if (dropdownMenu) {
+                        dropdownMenu.classList.remove('show');
+                    }
+                }
+            });
+        });
+        
+        // Mobile menu toggle
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const closeMobileMenu = document.getElementById('close-mobile-menu');
+        
+        if (mobileMenuButton && mobileMenu && closeMobileMenu) {
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.add('open');
+                document.body.style.overflow = 'hidden';
+            });
+            
+            closeMobileMenu.addEventListener('click', () => {
+                mobileMenu.classList.remove('open');
+                document.body.style.overflow = 'auto';
+            });
+            
+            // Close mobile menu when clicking outside
+            window.addEventListener('click', (e) => {
+                if (!mobileMenu.contains(e.target) && e.target !== mobileMenuButton) {
+                    mobileMenu.classList.remove('open');
+                    document.body.style.overflow = 'auto';
+                }
+            });
+        }
+    </script>
+    
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

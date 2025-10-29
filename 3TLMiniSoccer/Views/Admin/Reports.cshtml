@@ -1,0 +1,332 @@
+@{
+    ViewData["Title"] = "Báo cáo thống kê";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<h1 class="text-2xl font-bold text-gray-800 mb-6">Báo cáo thống kê</h1>
+
+<!-- Date Range and Report Type Filters -->
+<div class="bg-white rounded-lg shadow p-6 mb-6">
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">Từ ngày</label>
+      <input type="date" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">Đến ngày</label>
+      <input type="date" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">Loại báo cáo</label>
+      <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+        <option value="booking">Báo cáo đặt sân</option>
+        <option value="revenue">Báo cáo doanh thu</option>
+        <option value="customer">Báo cáo khách hàng</option>
+        <option value="field">Báo cáo sân bóng</option>
+      </select>
+    </div>
+    <div class="flex items-end">
+      <button class="w-full px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors">
+        <i data-lucide="search" class="w-4 h-4 inline mr-2"></i>
+        Tạo báo cáo
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+  <!-- Total Bookings -->
+  <div class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow">
+    <div class="flex items-center">
+      <div class="p-3 rounded-full bg-blue-100 text-blue-500">
+        <i data-lucide="calendar" class="w-6 h-6"></i>
+      </div>
+      <div class="ml-4">
+        <p class="text-sm text-gray-500">Tổng số đặt sân</p>
+        <p class="text-2xl font-bold">1,456</p>
+        <p class="text-xs text-green-600">+12% so với tháng trước</p>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Total Revenue -->
+  <div class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow">
+    <div class="flex items-center">
+      <div class="p-3 rounded-full bg-green-100 text-green-500">
+        <i data-lucide="dollar-sign" class="w-6 h-6"></i>
+      </div>
+      <div class="ml-4">
+        <p class="text-sm text-gray-500">Tổng doanh thu</p>
+        <p class="text-2xl font-bold">125.5M ₫</p>
+        <p class="text-xs text-green-600">+8% so với tháng trước</p>
+      </div>
+    </div>
+  </div>
+  
+  <!-- New Customers -->
+  <div class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow">
+    <div class="flex items-center">
+      <div class="p-3 rounded-full bg-yellow-100 text-yellow-500">
+        <i data-lucide="user-plus" class="w-6 h-6"></i>
+      </div>
+      <div class="ml-4">
+        <p class="text-sm text-gray-500">Khách hàng mới</p>
+        <p class="text-2xl font-bold">89</p>
+        <p class="text-xs text-green-600">+15% so với tháng trước</p>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Growth Rate -->
+  <div class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow">
+    <div class="flex items-center">
+      <div class="p-3 rounded-full bg-purple-100 text-purple-500">
+        <i data-lucide="trending-up" class="w-6 h-6"></i>
+      </div>
+      <div class="ml-4">
+        <p class="text-sm text-gray-500">Tăng trưởng</p>
+        <p class="text-2xl font-bold">+12.5%</p>
+        <p class="text-xs text-green-600">So với tháng trước</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Charts Section -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+  <!-- Revenue Chart -->
+  <div class="bg-white rounded-lg shadow p-6">
+    <h3 class="text-lg font-semibold text-gray-800 mb-4">Doanh thu theo ngày</h3>
+    <canvas id="revenueChart" width="400" height="200"></canvas>
+  </div>
+  
+  <!-- Bookings Chart -->
+  <div class="bg-white rounded-lg shadow p-6">
+    <h3 class="text-lg font-semibold text-gray-800 mb-4">Số lượng đặt sân theo ngày</h3>
+    <canvas id="bookingsChart" width="400" height="200"></canvas>
+  </div>
+</div>
+
+<!-- Field Performance Chart -->
+<div class="bg-white rounded-lg shadow p-6 mb-8">
+  <h3 class="text-lg font-semibold text-gray-800 mb-4">Hiệu suất sân bóng</h3>
+  <canvas id="fieldPerformanceChart" width="800" height="300"></canvas>
+</div>
+
+<!-- Top Tables -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+  <!-- Top 5 Customers -->
+  <div class="bg-white rounded-lg shadow overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-200">
+      <h3 class="text-lg font-semibold text-gray-800">Top 5 khách hàng</h3>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Khách hàng</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Số lần đặt</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tổng tiền</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          <tr>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">1</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Nguyễn Văn A</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">45</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">12.5M ₫</td>
+          </tr>
+          <tr>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">2</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Trần Thị B</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">38</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">10.2M ₫</td>
+          </tr>
+          <tr>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">3</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Lê Văn C</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">32</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">8.7M ₫</td>
+          </tr>
+          <tr>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">4</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Phạm Thị D</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">28</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">7.5M ₫</td>
+          </tr>
+          <tr>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">5</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Hoàng Văn E</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">25</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">6.8M ₫</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  
+  <!-- Top 5 Fields -->
+  <div class="bg-white rounded-lg shadow overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-200">
+      <h3 class="text-lg font-semibold text-gray-800">Top 5 sân bóng</h3>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tên sân</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Số lần đặt</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Doanh thu</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          <tr>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">1</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Sân A (5 người)</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">156</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">32.5M ₫</td>
+          </tr>
+          <tr>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">2</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Sân B (7 người)</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">142</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">28.7M ₫</td>
+          </tr>
+          <tr>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">3</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Sân C (5 người)</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">128</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">25.2M ₫</td>
+          </tr>
+          <tr>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">4</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Sân D (7 người)</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">115</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">23.1M ₫</td>
+          </tr>
+          <tr>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">5</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Sân E (5 người)</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">98</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">19.8M ₫</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Time Analysis -->
+<div class="bg-white rounded-lg shadow p-6">
+  <h3 class="text-lg font-semibold text-gray-800 mb-4">Phân tích theo giờ</h3>
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="text-center p-4 bg-gray-50 rounded-lg">
+      <div class="text-2xl font-bold text-blue-600">18:00-20:00</div>
+      <div class="text-sm text-gray-500">Giờ cao điểm</div>
+      <div class="text-xs text-gray-400">45% tổng đặt sân</div>
+    </div>
+    <div class="text-center p-4 bg-gray-50 rounded-lg">
+      <div class="text-2xl font-bold text-green-600">20:00-22:00</div>
+      <div class="text-sm text-gray-500">Giờ vàng</div>
+      <div class="text-xs text-gray-400">35% tổng đặt sân</div>
+    </div>
+    <div class="text-center p-4 bg-gray-50 rounded-lg">
+      <div class="text-2xl font-bold text-yellow-600">16:00-18:00</div>
+      <div class="text-sm text-gray-500">Giờ trung bình</div>
+      <div class="text-xs text-gray-400">15% tổng đặt sân</div>
+    </div>
+    <div class="text-center p-4 bg-gray-50 rounded-lg">
+      <div class="text-2xl font-bold text-red-600">14:00-16:00</div>
+      <div class="text-sm text-gray-500">Giờ thấp</div>
+      <div class="text-xs text-gray-400">5% tổng đặt sân</div>
+    </div>
+  </div>
+</div>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+  // Initialize Lucide icons
+  lucide.createIcons();
+  
+  // Revenue Chart
+  const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+  new Chart(revenueCtx, {
+    type: 'line',
+    data: {
+      labels: ['1/1', '2/1', '3/1', '4/1', '5/1', '6/1', '7/1'],
+      datasets: [{
+        label: 'Doanh thu (triệu ₫)',
+        data: [12, 19, 15, 25, 22, 18, 30],
+        borderColor: 'rgb(34, 197, 94)',
+        backgroundColor: 'rgba(34, 197, 94, 0.1)',
+        tension: 0.4
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: {
+          beginAtZero: true
+        }
+      }
+    }
+  });
+  
+  // Bookings Chart
+  const bookingsCtx = document.getElementById('bookingsChart').getContext('2d');
+  new Chart(bookingsCtx, {
+    type: 'bar',
+    data: {
+      labels: ['1/1', '2/1', '3/1', '4/1', '5/1', '6/1', '7/1'],
+      datasets: [{
+        label: 'Số đặt sân',
+        data: [8, 12, 10, 18, 15, 11, 20],
+        backgroundColor: 'rgba(59, 130, 246, 0.8)',
+        borderColor: 'rgb(59, 130, 246)',
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: {
+          beginAtZero: true
+        }
+      }
+    }
+  });
+  
+  // Field Performance Chart
+  const fieldCtx = document.getElementById('fieldPerformanceChart').getContext('2d');
+  new Chart(fieldCtx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Sân A', 'Sân B', 'Sân C', 'Sân D', 'Sân E', 'Sân F'],
+      datasets: [{
+        data: [25, 20, 18, 15, 12, 10],
+        backgroundColor: [
+          'rgba(34, 197, 94, 0.8)',
+          'rgba(59, 130, 246, 0.8)',
+          'rgba(245, 158, 11, 0.8)',
+          'rgba(239, 68, 68, 0.8)',
+          'rgba(139, 92, 246, 0.8)',
+          'rgba(236, 72, 153, 0.8)'
+        ],
+        borderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          position: 'bottom'
+        }
+      }
+    }
+  });
+</script>

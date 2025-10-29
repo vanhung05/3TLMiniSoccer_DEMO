@@ -1,0 +1,1169 @@
+@model _3TLMiniSoccer.ViewModels.FieldIndexViewModel
+@{
+    ViewData["Title"] = "Sân bóng - 3TL Mini Soccer";
+    ViewData["Description"] = "Sân bóng mini 5 người & 7 người chất lượng cao với mặt cỏ đạt chuẩn, hệ thống đèn LED hiện đại tại 3TL Mini Soccer";
+}
+
+@section Styles {
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#16a34a',
+                        dark: '#0f172a',
+                        accent: '#f59e0b',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        @@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        .hero-gradient {
+            background: linear-gradient(135deg, rgba(22, 163, 74, 0.9) 0%, rgba(15, 23, 42, 0.9) 100%);
+        }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .dropdown-menu {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .dropdown:hover .dropdown-menu,
+        .dropdown:focus-within .dropdown-menu {
+            display: block;
+            opacity: 1;
+        }
+        
+        .mobile-menu {
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .mobile-menu.open {
+            transform: translateX(0);
+        }
+        
+        .placeholder-img {
+            background: linear-gradient(45deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%);
+            background-size: 200% 200%;
+            animation: shimmer 2s infinite linear;
+        }
+        
+        @@keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        
+        /* Custom flatpickr styles */
+        .flatpickr-calendar {
+            border-radius: 12px !important;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+            border: 1px solid #e5e7eb !important;
+        }
+        
+        .flatpickr-day {
+            border-radius: 8px !important;
+            margin: 2px !important;
+        }
+        
+        .flatpickr-day:hover {
+            background: #3b82f6 !important;
+            color: white !important;
+        }
+        
+        .flatpickr-day.selected {
+            background: #1d4ed8 !important;
+            color: white !important;
+        }
+        
+        .flatpickr-day.today {
+            border: 2px solid #3b82f6 !important;
+        }
+        
+        .flatpickr-day.disabled {
+            color: #9ca3af !important;
+            background: #f3f4f6 !important;
+        }
+        
+        .flatpickr-months {
+            background: #f8fafc !important;
+            border-radius: 12px 12px 0 0 !important;
+        }
+        
+        .flatpickr-current-month {
+            font-weight: 600 !important;
+        }
+        
+        .flatpickr-prev-month:hover svg,
+        .flatpickr-next-month:hover svg {
+            fill: #3b82f6 !important;
+        }
+        
+        .line-clamp-3 {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .slot-badge {
+            transition: all 0.2s;
+        }
+        
+        .slot-badge:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50" id="success-message">
+        @TempData["SuccessMessage"]
+    </div>
+    <script>
+        setTimeout(function() {
+            document.getElementById('success-message').style.display = 'none';
+        }, 3000);
+    </script>
+}
+
+
+  <!-- Hero Section -->
+    <section class="relative hero-field text-white w-full">
+        <div class="absolute inset-0 bg-black opacity-20"></div>
+        <div class="container mx-auto px-4 py-24 md:py-32 relative z-10">
+            <div class="max-w-4xl mx-auto text-center">
+                <h1 class="text-4xl md:text-5xl font-bold mb-6" data-aos="fade-right">Sân 3TL – chuẩn cho 5 người & 7 người</h1>
+                <p class="text-lg md:text-xl mb-8" data-aos="fade-left" data-aos-delay="100">Mặt cỏ nhân tạo chất lượng cao, hệ thống đèn LED hiện đại, phòng thay đồ rộng rãi, bãi đậu xe thuận tiện và dịch vụ nước uống tận nơi. Trải nghiệm đá bóng chuyên nghiệp ngay tại 3TL!</p>
+                <div class="flex flex-wrap justify-center gap-4" data-aos="zoom-in" data-aos-delay="200">
+                    <a href="#booking" class="bg-accent hover:bg-yellow-600 text-white font-bold py-3 px-6 rounded-full transition">Đặt sân ngay</a>
+                    <a href="#pricing" class="bg-white hover:bg-gray-100 text-primary font-bold py-3 px-6 rounded-full transition">Xem bảng giá</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mini Stats -->
+        <div class="container mx-auto px-4 relative z-10 -mt-10">
+            <div class="bg-white rounded-xl shadow-lg p-6 grid grid-cols-2 md:grid-cols-4 gap-4" data-aos="flip-up">
+                <div class="text-center">
+                    <div class="text-3xl font-bold text-primary">@Model.Fields.Count+</div>
+                    <div class="text-gray-600">Sân bóng</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-3xl font-bold text-primary">@Model.FieldTypes.Count+</div>
+                    <div class="text-gray-600">Loại sân</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-3xl font-bold text-primary">4.8★</div>
+                    <div class="text-gray-600">Đánh giá</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-3xl font-bold text-primary">24/7</div>
+                    <div class="text-gray-600">Hỗ trợ</div>
+                </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Why Choose Us -->
+    <section class="py-16 bg-gray-50">
+    <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold mb-4" data-aos="bounce-in">Vì sao chọn 3TL?</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto" data-aos="fade-in" data-aos-delay="100">Chúng tôi tự hào mang đến những dịch vụ và tiện ích tốt nhất cho cộng đồng yêu bóng đá</p>
+            </div>
+      
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Feature 1 -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden card-hover" data-aos="slide-up" data-aos-delay="100">
+                    <div class="p-6">
+                        <div class="w-12 h-12 bg-primary bg-opacity-10 rounded-full flex items-center justify-center mb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+          </div>
+                        <h3 class="text-xl font-bold mb-2">Đặt sân online 24/7</h3>
+          <p class="text-gray-600">Hệ thống đặt sân tự động hoạt động liên tục, hỗ trợ mọi lúc mọi nơi</p>
+                    </div>
+        </div>
+        
+        <!-- Feature 2 -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden card-hover" data-aos="slide-up" data-aos-delay="200">
+                    <div class="p-6">
+                        <div class="w-12 h-12 bg-primary bg-opacity-10 rounded-full flex items-center justify-center mb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="12" y1="1" x2="12" y2="23"></line>
+                                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                            </svg>
+          </div>
+                        <h3 class="text-xl font-bold mb-2">Giá minh bạch</h3>
+          <p class="text-gray-600">Không phát sinh chi phí, giá cả công khai theo từng khung giờ</p>
+                    </div>
+        </div>
+        
+        <!-- Feature 3 -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden card-hover" data-aos="slide-up" data-aos-delay="300">
+                    <div class="p-6">
+                        <div class="w-12 h-12 bg-primary bg-opacity-10 rounded-full flex items-center justify-center mb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="16" y1="2" x2="16" y2="6"></line>
+                                <line x1="8" y1="2" x2="8" y2="6"></line>
+                                <line x1="3" y1="10" x2="21" y2="10"></line>
+                            </svg>
+          </div>
+                        <h3 class="text-xl font-bold mb-2">Nhiều khung giờ</h3>
+          <p class="text-gray-600">Đa dạng lịch trống từ sáng đến tối, phù hợp mọi lịch trình</p>
+                    </div>
+        </div>
+        
+        <!-- Feature 4 -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden card-hover" data-aos="slide-up" data-aos-delay="400">
+                    <div class="p-6">
+                        <div class="w-12 h-12 bg-primary bg-opacity-10 rounded-full flex items-center justify-center mb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
+                                <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
+                                <line x1="6" y1="1" x2="6" y2="4"></line>
+                                <line x1="10" y1="1" x2="10" y2="4"></line>
+                                <line x1="14" y1="1" x2="14" y2="4"></line>
+                            </svg>
+          </div>
+                        <h3 class="text-xl font-bold mb-2">Combo nước/đồ ăn</h3>
+          <p class="text-gray-600">Dịch vụ đồ uống và đồ ăn nhẹ ngay tại sân với giá ưu đãi</p>
+                    </div>
+        </div>
+        
+        <!-- Feature 5 -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden card-hover" data-aos="slide-up" data-aos-delay="500">
+                    <div class="p-6">
+                        <div class="w-12 h-12 bg-primary bg-opacity-10 rounded-full flex items-center justify-center mb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+                            </svg>
+          </div>
+                        <h3 class="text-xl font-bold mb-2">Bảo trì định kỳ</h3>
+          <p class="text-gray-600">Mặt cỏ được kiểm tra và bảo dưỡng thường xuyên đảm bảo chất lượng</p>
+                    </div>
+        </div>
+        
+        <!-- Feature 6 -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden card-hover" data-aos="slide-up" data-aos-delay="600">
+                    <div class="p-6">
+                        <div class="w-12 h-12 bg-primary bg-opacity-10 rounded-full flex items-center justify-center mb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="1" y="3" width="15" height="13"></rect>
+                                <path d="M16 8h.01"></path>
+                                <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+                            </svg>
+          </div>
+                        <h3 class="text-xl font-bold mb-2">Chỗ đậu xe thuận tiện</h3>
+          <p class="text-gray-600">Bãi giữ xe rộng rãi, an ninh 24/24, miễn phí cho khách đặt sân</p>
+                    </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Booking Process -->
+    <section class="py-16 bg-white">
+    <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold mb-4" data-aos="bounce-in">Quy trình đặt sân</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto" data-aos="fade-in" data-aos-delay="100">Chỉ với 3 bước đơn giản, bạn có thể đặt sân và tận hưởng trận đấu</p>
+            </div>
+      
+            <div class="max-w-4xl mx-auto">
+        <div class="flex flex-col md:flex-row justify-between items-center">
+          <!-- Step 1 -->
+                    <div class="flex flex-col items-center mb-8 md:mb-0" data-aos="zoom-in" data-aos-delay="100">
+                        <div class="w-16 h-16 bg-primary rounded-full flex items-center justify-center text-white text-xl font-bold mb-4">1</div>
+                        <h3 class="text-xl font-semibold mb-2">Chọn sân</h3>
+            <p class="text-gray-600 text-center">Lựa chọn sân 5 người hoặc 7 người phù hợp</p>
+          </div>
+          
+          <!-- Arrow -->
+                    <div class="hidden md:block" data-aos="fade-in" data-aos-delay="200">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                            <polyline points="12 5 19 12 12 19"></polyline>
+                        </svg>
+          </div>
+                    <div class="md:hidden" data-aos="fade-in" data-aos-delay="200">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <polyline points="19 12 12 19 5 12"></polyline>
+                        </svg>
+          </div>
+          
+          <!-- Step 2 -->
+                    <div class="flex flex-col items-center my-8 md:my-0" data-aos="zoom-in" data-aos-delay="300">
+                        <div class="w-16 h-16 bg-primary rounded-full flex items-center justify-center text-white text-xl font-bold mb-4">2</div>
+                        <h3 class="text-xl font-semibold mb-2">Chọn giờ</h3>
+            <p class="text-gray-600 text-center">Xem lịch trống và đặt khung giờ mong muốn</p>
+          </div>
+          
+          <!-- Arrow -->
+                    <div class="hidden md:block" data-aos="fade-in" data-aos-delay="400">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                            <polyline points="12 5 19 12 12 19"></polyline>
+                        </svg>
+          </div>
+                    <div class="md:hidden" data-aos="fade-in" data-aos-delay="400">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <polyline points="19 12 12 19 5 12"></polyline>
+                        </svg>
+          </div>
+          
+          <!-- Step 3 -->
+                    <div class="flex flex-col items-center mt-8 md:mt-0" data-aos="zoom-in" data-aos-delay="500">
+                        <div class="w-16 h-16 bg-primary rounded-full flex items-center justify-center text-white text-xl font-bold mb-4">3</div>
+                        <h3 class="text-xl font-semibold mb-2">Xác nhận</h3>
+            <p class="text-gray-600 text-center">Thanh toán và nhận thông báo đặt sân thành công</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Price Table -->
+    <section class="py-16 bg-gray-50" id="pricing">
+    <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold mb-4" data-aos="bounce-in">Bảng giá tham khảo</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto" data-aos="fade-in" data-aos-delay="100">Giá cả minh bạch, không phát sinh chi phí ẩn</p>
+            </div>
+      
+            <div class="max-w-4xl mx-auto" data-aos="slide-up" data-aos-delay="200">
+      <div class="overflow-x-auto">
+                    <table class="min-w-full bg-white border border-gray-200 rounded-xl overflow-hidden shadow-lg">
+                        <thead class="bg-primary text-white">
+                            <tr>
+                                <th class="px-6 py-4 text-left text-sm font-semibold">Loại sân</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold">Sáng (6h-12h)</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold">Chiều (12h-18h)</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold">Tối (18h-23h)</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+                            <tr class="hover:bg-gray-50 transition">
+                                <td class="px-6 py-4 whitespace-nowrap font-semibold text-gray-900">5 người</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-primary font-medium">250.000 VND/giờ</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-primary font-medium">300.000 VND/giờ</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-primary font-medium">350.000 VND/giờ</td>
+            </tr>
+                            <tr class="hover:bg-gray-50 transition">
+                                <td class="px-6 py-4 whitespace-nowrap font-semibold text-gray-900">7 người</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-primary font-medium">350.000 VND/giờ</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-primary font-medium">400.000 VND/giờ</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-primary font-medium">450.000 VND/giờ</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      
+      <div class="mt-8 text-center">
+                    <p class="text-gray-600 mb-2">* Giá trên chưa bao gồm VAT. Áp dụng cho ngày thường.</p>
+        <p class="text-gray-600">Giá cuối tuần và ngày lễ có thể thay đổi.</p>
+                </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Gallery -->
+    <section class="py-16 bg-white">
+    <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold mb-4" data-aos="bounce-in">Bộ ảnh sân</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto" data-aos="fade-in" data-aos-delay="100">Khám phá không gian sân bóng hiện đại và chuyên nghiệp</p>
+            </div>
+      
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 card-hover" data-aos="zoom-in" data-aos-delay="100">
+                    <div class="h-64 placeholder-img"></div>
+        </div>
+                <div class="rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 card-hover" data-aos="zoom-in" data-aos-delay="200">
+                    <div class="h-64 placeholder-img"></div>
+        </div>
+                <div class="rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 card-hover" data-aos="zoom-in" data-aos-delay="300">
+                    <div class="h-64 placeholder-img"></div>
+        </div>
+                <div class="rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 card-hover" data-aos="zoom-in" data-aos-delay="400">
+                    <div class="h-64 placeholder-img"></div>
+        </div>
+                <div class="rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 card-hover" data-aos="zoom-in" data-aos-delay="500">
+                    <div class="h-64 placeholder-img"></div>
+        </div>
+                <div class="rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 card-hover" data-aos="zoom-in" data-aos-delay="600">
+                    <div class="h-64 placeholder-img"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Field Booking Section -->
+    <section class="py-16 bg-gray-50" id="booking">
+    <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold mb-4" data-aos="bounce-in">Đặt sân ngay</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto" data-aos="fade-in" data-aos-delay="100">Tìm và đặt sân phù hợp với nhu cầu của bạn</p>
+            </div>
+      
+      <!-- Filter Bar -->
+            <div class="bg-white p-6 rounded-xl shadow-lg mb-8" data-aos="slide-up" data-aos-delay="200">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+          <!-- Field Type -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Loại sân</label>
+                        <select class="w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring-primary">
+              <option>Tất cả</option>
+              <option>5 người</option>
+              <option>7 người</option>
+            </select>
+          </div>
+          
+          <!-- Time Slot -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Khung giờ</label>
+                        <select class="w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring-primary">
+              <option>Tất cả</option>
+              <option>Sáng (6h-12h)</option>
+              <option>Chiều (12h-18h)</option>
+              <option>Tối (18h-23h)</option>
+            </select>
+          </div>
+          
+          <!-- Date Picker -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Ngày</label>
+                        <input type="text" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring-primary datepicker" placeholder="Chọn ngày">
+          </div>
+          
+          <!-- Price Range -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Giá (VND)</label>
+            <div class="flex items-center space-x-2">
+                            <input type="number" placeholder="Từ" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring-primary">
+              <span>-</span>
+                            <input type="number" placeholder="Đến" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring-primary">
+            </div>
+          </div>
+          
+          <!-- Search -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Tìm sân</label>
+            <div class="relative">
+                            <input type="text" placeholder="Nhập tên sân" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring-primary pl-10">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <path d="M21 21l-4.35-4.35"></path>
+                                </svg>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Sort -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Sắp xếp</label>
+                        <select class="w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring-primary">
+              <option>Phổ biến</option>
+              <option>Giá tăng dần</option>
+              <option>Giá giảm dần</option>
+              <option>Đánh giá cao</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Field Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        @if (Model.Fields.Any())
+        {
+            @foreach (var field in Model.Fields)
+            {
+                <div class="bg-white rounded-xl shadow-md overflow-hidden card-hover" data-aos="slide-up" data-aos-delay="100">
+                    <div class="relative">
+                        @if (!string.IsNullOrEmpty(field.ImageUrl))
+                        {
+                            <img src="/images/san/@field.ImageUrl" alt="@field.FieldName" class="h-48 w-full object-cover" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0yNCAyNEg0MFY0MEgyNFYyNFoiIGZpbGw9IiM5Q0EzQUYiLz4KPHBhdGggZD0iTTI4IDI4SDM2VjM2SDI4VjI4WiIgZmlsbD0iI0ZGRkZGRiIvPgo8L3N2Zz4K'">
+                        }
+                        else
+                        {
+                            <div class="h-48 placeholder-img"></div>
+                        }
+                        @if (field.Status == "Maintenance")
+                        {
+                            <div class="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
+                                Bảo trì
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="absolute top-2 right-2 bg-primary text-white text-xs font-bold px-2 py-1 rounded">
+                                Còn nhiều slot
+                            </div>
+                        }
+                    </div>
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="text-lg font-bold text-gray-800">@field.FieldName</h3>
+                            @if (field.Status == "Maintenance")
+                            {
+                                <span class="bg-red-100 text-red-800 text-xs font-medium px-2 py-0.5 rounded">Bảo trì</span>
+                            }
+                            else
+                            {
+                                <span class="bg-green-100 text-green-800 text-xs font-medium px-2 py-0.5 rounded">@field.FieldType.TypeName</span>
+                            }
+                        </div>
+                        <p class="text-gray-600 text-sm mb-3">@field.Location</p>
+                        
+                        <div class="flex items-center mb-3">
+                            <div class="flex text-yellow-400">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                </svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                </svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                </svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                </svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                </svg>
+                            </div>
+                            <span class="text-gray-500 text-sm ml-1">(24 đánh giá)</span>
+                        </div>
+                        
+                        <p class="text-lg font-bold text-primary mb-4">Từ @field.FieldType.BasePrice.ToString("N0") VND/giờ</p>
+                        
+                        @if (field.Status != "Maintenance")
+                        {
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <button class="slot-badge bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-medium px-3 py-1 rounded">
+                                    8:00 - 9:00
+                                </button>
+                                <button class="slot-badge bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-medium px-3 py-1 rounded">
+                                    10:00 - 11:00
+                                </button>
+                                <button class="slot-badge bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-medium px-3 py-1 rounded">
+                                    15:00 - 16:00
+                                </button>
+                            </div>
+                        }
+                        
+                        <div class="flex space-x-2">
+                            <a href="@Url.Action("Details", "Field", new { id = field.FieldId })" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-2 px-4 rounded-lg transition text-center">
+                                Chi tiết
+                            </a>
+                            <button class="flex-1 bg-primary hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition book-btn" data-field-id="@field.FieldId">
+                                Đặt sân
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-span-full text-center py-12">
+                <div class="text-gray-500 text-lg mb-4">Chưa có sân bóng nào trong hệ thống</div>
+                <p class="text-gray-400">Vui lòng liên hệ quản trị viên để thêm sân bóng</p>
+            </div>
+        }
+      </div>
+            
+            <!-- Pagination -->
+            <div class="mt-8 flex justify-center" data-aos="slide-up">
+                <nav class="inline-flex rounded-lg shadow-sm">
+                    <button class="px-3 py-2 rounded-l-lg border border-gray-300 bg-white text-gray-500 hover:bg-gray-50 transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                    </button>
+                    <button class="px-3 py-2 border-t border-b border-gray-300 bg-primary text-white font-medium">
+                        1
+                    </button>
+                    <button class="px-3 py-2 border-t border-b border-gray-300 bg-white text-gray-500 hover:bg-gray-50 transition">
+                        2
+                    </button>
+                    <button class="px-3 py-2 border-t border-b border-gray-300 bg-white text-gray-500 hover:bg-gray-50 transition">
+                        3
+                    </button>
+                    <button class="px-3 py-2 rounded-r-lg border border-gray-300 bg-white text-gray-500 hover:bg-gray-50 transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </button>
+                </nav>
+            </div>
+        </div>
+    </section>
+
+  <!-- Booking Modal (Hidden by default) -->
+  <div class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 hidden" id="bookingModal">
+    <div class="bg-white rounded-lg shadow-xl max-w-md w-full max-h-screen overflow-y-auto">
+      <div class="p-6">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-xl font-bold text-gray-800">Đặt sân</h3>
+          <button class="text-gray-400 hover:text-gray-500 modal-close">
+            <i data-feather="x" class="w-6 h-6"></i>
+          </button>
+        </div>
+        
+        <div class="mb-6">
+          <h4 class="font-medium text-gray-800 mb-2" id="modalFieldName">Sân A1 - 5 người</h4>
+          <p class="text-gray-600 text-sm" id="modalFieldLocation">123 Đường ABC, Quận 1, TP.HCM</p>
+        </div>
+        
+        <form asp-controller="Field" asp-action="Book" method="post" id="bookingForm">
+          @Html.AntiForgeryToken()
+          <input type="hidden" name="FieldId" id="modalFieldId" value="" />
+          <input type="hidden" name="TotalPrice" id="modalTotalPrice" value="0" />
+          
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Ngày đặt</label>
+            <input type="text" name="BookingDate" id="modalBookingDate" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring-primary datepicker" placeholder="Chọn ngày" readonly required>
+          </div>
+          
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Thời gian bắt đầu</label>
+            <input type="time" name="StartTime" id="modalStartTime" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring-primary" required>
+            <div class="text-xs text-gray-500 mt-1" id="modalTimeRange">Giờ mở sân: 06:00 - Giờ đóng sân: 23:00</div>
+          </div>
+          
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Thời gian kết thúc</label>
+            <input type="time" name="EndTime" id="modalEndTime" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring-primary" required>
+            <div class="text-xs text-gray-500 mt-1">Tự động tính dựa trên thời gian bắt đầu</div>
+          </div>
+          
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Thời gian thuê</label>
+            <select name="Duration" id="modalDurationSelect" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring-primary" required>
+              <option value="60">60 phút (1 giờ)</option>
+              <option value="90">90 phút (1.5 giờ)</option>
+              <option value="120" selected>120 phút (2 giờ)</option>
+              <option value="180">180 phút (3 giờ)</option>
+              <option value="240">240 phút (4 giờ)</option>
+            </select>
+          </div>
+          
+          <!-- Availability Check -->
+          <div class="mb-4">
+            <button type="button" id="modalCheckAvailabilityBtn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg transition">
+              <i class="fas fa-search"></i> Kiểm tra khả dụng
+            </button>
+            <div id="modalAvailabilityStatus" class="mt-2 text-sm"></div>
+          </div>
+          
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Mã giảm giá (tùy chọn)</label>
+            <div class="flex gap-2">
+              <input type="text" id="modalVoucherCode" name="VoucherCode" class="flex-1 rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring-primary" placeholder="Nhập mã giảm giá">
+              <button type="button" id="modalApplyVoucherBtn" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors">
+                Áp dụng
+              </button>
+            </div>
+            <input type="hidden" id="modalVoucherDiscount" name="VoucherDiscount" value="0" />
+            <div id="modalVoucherMessage" class="mt-2 text-sm hidden"></div>
+          </div>
+          
+          <!-- Time Range Display -->
+          <div class="mb-4" id="modalTimeRangeDisplay" style="display: none;">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Thời gian đặt</label>
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 text-center">
+              <span id="modalTimeRangeText" class="text-blue-800 font-medium"></span>
+            </div>
+          </div>
+          
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Ghi chú (tùy chọn)</label>
+            <textarea name="Notes" rows="3" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring-primary" placeholder="Yêu cầu thêm..."></textarea>
+          </div>
+          
+          <div class="bg-gray-50 p-4 rounded-lg mb-6">
+            <div class="flex justify-between mb-2">
+              <span class="text-gray-600">Giá sân (1 giờ)</span>
+              <span class="font-medium" id="modalBasePrice">0 VND</span>
+            </div>
+            <div class="flex justify-between mb-2">
+              <span class="text-gray-600">Thời gian</span>
+              <span class="font-medium" id="modalDurationDisplay">0 phút</span>
+            </div>
+            <div class="flex justify-between mb-2">
+              <span class="text-gray-600">Phí dịch vụ</span>
+              <span class="font-medium">0 VND</span>
+            </div>
+            <div class="flex justify-between mb-2">
+              <span class="text-gray-600">Tạm tính</span>
+              <span class="font-medium" id="modalSubtotalDisplay">0 VND</span>
+            </div>
+            <div class="flex justify-between mb-2 text-green-600" id="modalDiscountRow" style="display: none;">
+              <span>Giảm giá</span>
+              <span class="font-medium" id="modalDiscountDisplay">0 VND</span>
+            </div>
+            <div class="flex justify-between font-bold text-lg text-primary">
+              <span>Tổng cộng</span>
+              <span id="modalTotalPriceDisplay">0 VND</span>
+            </div>
+          </div>
+          
+          <div class="flex space-x-3">
+            <button type="button" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded modal-close">
+              Hủy
+            </button>
+            <button type="submit" id="modalSubmitBtn" class="flex-1 bg-primary hover:bg-green-700 text-white font-medium py-2 px-4 rounded">
+              Đặt sân ngay
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+
+@section Scripts {
+    <script>
+        // Initialize AOS animation
+        AOS.init({
+            duration: 800,
+            easing: 'ease-in-out',
+            once: true
+        });
+        
+        // Initialize Feather Icons
+        feather.replace();
+        
+        // Field data for modal
+        const fieldData = {
+            @foreach (var field in Model.Fields)
+            {
+                <text>
+                @field.FieldId: {
+                    fieldId: @field.FieldId,
+                    fieldName: '@field.FieldName',
+                    fieldType: '@field.FieldType?.TypeName',
+                    playerCount: @field.FieldType?.PlayerCount,
+                    basePrice: @field.FieldType?.BasePrice,
+                    location: '@field.Location',
+                    openingTime: '@field.OpeningTime.ToString(@"hh\:mm")',
+                    closingTime: '@field.ClosingTime.ToString(@"hh\:mm")'
+                },
+                </text>
+            }
+        };
+        
+        // Initialize Datepicker
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize flatpickr with better configuration
+            flatpickr(".datepicker", {
+                dateFormat: "Y-m-d",
+                minDate: "today",
+                allowInput: false,
+                clickOpens: true,
+                placeholder: "Chọn ngày",
+                locale: "vi",
+                onChange: function(selectedDates, dateStr, instance) {
+                    // Load available time slots for the selected date
+                    if (dateStr) {
+                        loadAvailableTimesForDate(dateStr);
+                    }
+                },
+                onReady: function(selectedDates, dateStr, instance) {
+                    // Set default date to today when calendar opens
+                    if (!dateStr) {
+                        const today = new Date();
+                        const todayStr = today.getFullYear() + '-' + 
+                                       String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+                                       String(today.getDate()).padStart(2, '0');
+                        instance.setDate(todayStr, false);
+                    }
+                }
+            });
+            
+            // Mobile menu toggle
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            const closeMobileMenu = document.getElementById('close-mobile-menu');
+            
+            if (mobileMenuButton && mobileMenu && closeMobileMenu) {
+                mobileMenuButton.addEventListener('click', () => {
+                    mobileMenu.classList.add('open');
+                    document.body.style.overflow = 'hidden';
+                });
+                
+                closeMobileMenu.addEventListener('click', () => {
+                    mobileMenu.classList.remove('open');
+                    document.body.style.overflow = 'auto';
+                });
+                
+                // Close mobile menu when clicking outside
+                window.addEventListener('click', (e) => {
+                    if (!mobileMenu.contains(e.target) && e.target !== mobileMenuButton) {
+                        mobileMenu.classList.remove('open');
+                        document.body.style.overflow = 'auto';
+                    }
+                });
+            }
+            
+            // Booking modal toggle
+            const bookButtons = document.querySelectorAll('.book-btn');
+            const modal = document.getElementById('bookingModal');
+            const modalCloseButtons = document.querySelectorAll('.modal-close');
+            
+            bookButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const fieldId = this.getAttribute('data-field-id');
+                    if (fieldId && fieldData[fieldId]) {
+                        populateModal(fieldData[fieldId]);
+                        if (modal) {
+                            modal.classList.remove('hidden');
+                        }
+                    }
+                });
+            });
+            
+            modalCloseButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    if (modal) {
+                        modal.classList.add('hidden');
+                    }
+                });
+            });
+            
+            // Close modal when clicking outside
+            if (modal) {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        modal.classList.add('hidden');
+                    }
+                });
+            }
+            
+            // Modal form elements
+            const modalDurationSelect = document.getElementById('modalDurationSelect');
+            const modalStartTime = document.getElementById('modalStartTime');
+            const modalEndTime = document.getElementById('modalEndTime');
+            const modalTotalPriceElement = document.getElementById('modalTotalPrice');
+            
+            // Event listeners for price calculation
+            if (modalDurationSelect) {
+                modalDurationSelect.addEventListener('change', calculateModalTotalPrice);
+            }
+            
+            if (modalStartTime) {
+                modalStartTime.addEventListener('change', function() {
+                    // Validate start time first
+                    if (!validateModalTimeInputs()) {
+                        return;
+                    }
+                    updateEndTime();
+                    calculateModalTotalPrice();
+                });
+            }
+            
+            if (modalEndTime) {
+                modalEndTime.addEventListener('change', function() {
+                    // Validate end time first
+                    if (!validateModalTimeInputs()) {
+                        return;
+                    }
+                    calculateModalTotalPrice();
+                });
+            }
+            
+            // Voucher functionality
+            const modalApplyVoucherBtn = document.getElementById('modalApplyVoucherBtn');
+            if (modalApplyVoucherBtn) {
+                modalApplyVoucherBtn.addEventListener('click', applyVoucher);
+            }
+            
+            // Check availability
+            const modalCheckAvailabilityBtn = document.getElementById('modalCheckAvailabilityBtn');
+            if (modalCheckAvailabilityBtn) {
+                modalCheckAvailabilityBtn.addEventListener('click', checkAvailability);
+            }
+            
+            // Form submission
+            const bookingForm = document.getElementById('bookingForm');
+            if (bookingForm) {
+                bookingForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    submitBooking();
+                });
+            }
+        });
+        
+        function populateModal(field) {
+            document.getElementById('modalFieldName').textContent = `${field.fieldName} - ${field.playerCount} người`;
+            document.getElementById('modalFieldLocation').textContent = field.location;
+            document.getElementById('modalFieldId').value = field.fieldId;
+            document.getElementById('modalBasePrice').textContent = field.basePrice.toLocaleString('vi-VN') + ' VND';
+            document.getElementById('modalTimeRange').textContent = `Giờ mở sân: ${field.openingTime} - Giờ đóng sân: ${field.closingTime}`;
+            
+            // Set current time as default for start time
+            const now = new Date();
+            const currentTime = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+            
+            // Set time constraints
+            const startTimeInput = document.getElementById('modalStartTime');
+            const endTimeInput = document.getElementById('modalEndTime');
+            startTimeInput.min = field.openingTime;
+            startTimeInput.max = field.closingTime;
+            startTimeInput.value = currentTime;
+            endTimeInput.min = field.openingTime;
+            endTimeInput.max = field.closingTime;
+            endTimeInput.value = addTime(currentTime, 120); // Default 2 hours
+            
+            // Reset voucher
+            document.getElementById('modalVoucherCode').value = '';
+            document.getElementById('modalVoucherDiscount').value = '0';
+            document.getElementById('modalVoucherMessage').classList.add('hidden');
+            document.getElementById('modalDiscountRow').style.display = 'none';
+            
+            // Calculate initial price
+            calculateModalTotalPrice();
+        }
+        
+        function validateModalTimeInputs() {
+            const startTime = document.getElementById('modalStartTime').value;
+            const endTime = document.getElementById('modalEndTime').value;
+            const fieldId = document.getElementById('modalFieldId').value;
+            
+            if (!fieldId || !fieldData[fieldId]) return true;
+            
+            const field = fieldData[fieldId];
+            const fieldOpeningTime = field.openingTime;
+            const fieldClosingTime = field.closingTime;
+            
+            // Check if start time is within field operating hours
+            if (startTime && (startTime < fieldOpeningTime || startTime > fieldClosingTime)) {
+                showModalTimeValidationError('Thời gian bắt đầu phải trong khung giờ hoạt động của sân');
+                return false;
+            }
+            
+            // Check if end time is within field operating hours
+            if (endTime && (endTime < fieldOpeningTime || endTime > fieldClosingTime)) {
+                showModalTimeValidationError('Thời gian kết thúc phải trong khung giờ hoạt động của sân');
+                return false;
+            }
+            
+            // Check if end time is after start time
+            if (startTime && endTime && startTime >= endTime) {
+                showModalTimeValidationError('Thời gian kết thúc phải sau thời gian bắt đầu');
+                return false;
+            }
+            
+            // Check if current time is not in the past (for today's booking)
+            const today = new Date();
+            const todayStr = today.getFullYear() + '-' + 
+                           String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+                           String(today.getDate()).padStart(2, '0');
+            const selectedDate = document.getElementById('modalBookingDate').value;
+            
+            if (selectedDate === todayStr && startTime) {
+                const currentTime = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+                if (startTime < currentTime) {
+                    showModalTimeValidationError('Không thể đặt sân trong quá khứ');
+                    return false;
+                }
+            }
+            
+            return true;
+        }
+        
+        function showModalTimeValidationError(message) {
+            const statusDiv = document.getElementById('modalAvailabilityStatus');
+            statusDiv.className = 'mt-2 text-sm text-red-600';
+            statusDiv.textContent = message;
+        }
+        
+        function updateEndTime() {
+            const startTime = document.getElementById('modalStartTime').value;
+            const duration = parseInt(document.getElementById('modalDurationSelect').value) || 120;
+            
+            if (startTime) {
+                const endTime = addTime(startTime, duration);
+                document.getElementById('modalEndTime').value = endTime;
+                
+                // Validate the calculated end time
+                if (validateModalTimeInputs()) {
+                    calculateModalTotalPrice();
+                }
+            }
+        }
+        
+        function addTime(timeStr, minutes) {
+            const [hours, mins] = timeStr.split(':').map(Number);
+            const totalMinutes = hours * 60 + mins + minutes;
+            const newHours = Math.floor(totalMinutes / 60);
+            const newMins = totalMinutes % 60;
+            return `${newHours.toString().padStart(2, '0')}:${newMins.toString().padStart(2, '0')}`;
+        }
+        
+        function calculateModalTotalPrice() {
+            const duration = parseInt(document.getElementById('modalDurationSelect').value) || 0;
+            const fieldId = document.getElementById('modalFieldId').value;
+            const voucherDiscount = parseFloat(document.getElementById('modalVoucherDiscount').value) || 0;
+            
+            if (!fieldId || !fieldData[fieldId]) return;
+            
+            const basePrice = fieldData[fieldId].basePrice;
+            
+            // Calculate price based on minutes (basePrice is per hour)
+            const hours = duration / 60;
+            let subtotal = basePrice * hours;
+            let discount = 0;
+            
+            // Update duration display
+            document.getElementById('modalDurationDisplay').textContent = duration + ' phút';
+            
+            // Apply voucher discount
+            if (voucherDiscount > 0) {
+                if (voucherDiscount <= 1) {
+                    // Percentage discount (0.1 = 10%)
+                    discount = subtotal * voucherDiscount;
+                } else {
+                    // Fixed amount discount
+                    discount = Math.min(voucherDiscount, subtotal);
+                }
+            }
+            
+            const total = Math.max(0, subtotal - discount);
+            
+            modalTotalPriceElement.value = total;
+            document.getElementById('modalSubtotalDisplay').textContent = subtotal.toLocaleString('vi-VN') + ' VND';
+            document.getElementById('modalDiscountDisplay').textContent = discount.toLocaleString('vi-VN') + ' VND';
+            document.getElementById('modalTotalPriceDisplay').textContent = total.toLocaleString('vi-VN') + ' VND';
+            
+            // Show/hide discount row
+            if (discount > 0) {
+                document.getElementById('modalDiscountRow').style.display = 'flex';
+            } else {
+                document.getElementById('modalDiscountRow').style.display = 'none';
+            }
+        }
+        
+        function applyVoucher() {
+            const voucherCode = document.getElementById('modalVoucherCode').value;
+            const fieldId = document.getElementById('modalFieldId').value;
+            const duration = parseInt(document.getElementById('modalDurationSelect').value) || 120;
+            
+            if (!voucherCode || !fieldId || !fieldData[fieldId]) {
+                showVoucherMessage('Vui lòng nhập mã giảm giá', 'error');
+                return;
+            }
+            
+            const basePrice = fieldData[fieldId].basePrice;
+            const durationInHours = duration / 60;
+            const orderAmount = basePrice * durationInHours;
+            
+            // Simulate voucher validation (replace with actual API call)
+            fetch('/Field/ValidateVoucher', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: JSON.stringify({
+                    voucherCode: voucherCode,
+                    orderAmount: orderAmount
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.isValid) {
+                    document.getElementById('modalVoucherDiscount').value = data.discountAmount;
+                    showVoucherMessage(data.message, 'success');
+                    calculateModalTotalPrice();
+                } else {
+                    document.getElementById('modalVoucherDiscount').value = '0';
+                    showVoucherMessage(data.message, 'error');
+                    calculateModalTotalPrice();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showVoucherMessage('Có lỗi xảy ra khi kiểm tra mã giảm giá', 'error');
+            });
+        }
+        
+        function showVoucherMessage(message, type) {
+            const messageDiv = document.getElementById('modalVoucherMessage');
+            messageDiv.textContent = message;
+            messageDiv.className = `mt-2 text-sm ${type === 'success' ? 'text-green-600' : 'text-red-600'}`;
+            messageDiv.classList.remove('hidden');
+        }
+        
+        function checkAvailability() {
+            const fieldId = document.getElementById('modalFieldId').value;
+            const bookingDate = document.getElementById('modalBookingDate').value;
+            const startTime = document.getElementById('modalStartTime').value;
+            const endTime = document.getElementById('modalEndTime').value;
+            
+            if (!fieldId || !bookingDate || !startTime || !endTime) {
+                showAvailabilityStatus('error', 'Vui lòng điền đầy đủ thông tin');
+                return;
+            }
+            
+            // Simulate availability check (replace with actual API call)
+            showAvailabilityStatus('success', 'Sân có sẵn cho thời gian này!');
+        }
+        
+        function showAvailabilityStatus(type, message) {
+            const statusDiv = document.getElementById('modalAvailabilityStatus');
+            statusDiv.className = `mt-2 text-sm ${type === 'success' ? 'text-green-600' : 'text-red-600'}`;
+            statusDiv.textContent = message;
+        }
+        
+        function loadAvailableTimesForDate(dateStr) {
+            // This function would load available time slots for the selected date
+            // Implementation depends on your backend API
+            console.log('Loading available times for:', dateStr);
+        }
+        
+        function submitBooking() {
+            const totalPrice = document.getElementById('modalTotalPrice').value;
+            
+            if (parseFloat(totalPrice) <= 0) {
+                alert('Vui lòng kiểm tra lại thông tin đặt sân');
+                return;
+            }
+            
+            // Submit the form
+            document.getElementById('bookingForm').submit();
+        }
+    </script>
+}

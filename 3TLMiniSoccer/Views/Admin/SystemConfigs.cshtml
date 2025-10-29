@@ -1,0 +1,494 @@
+@model _3TLMiniSoccer.ViewModels.SystemConfigViewModel
+@{
+    ViewData["Title"] = "Cấu hình thanh toán & hệ thống";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<!-- Header Actions -->
+<div class="flex justify-between items-center mb-6">
+  <h1 class="text-2xl font-bold text-gray-800">Cấu hình thanh toán & hệ thống</h1>
+</div>
+
+<!-- Quick Stats -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+  <div class="bg-white rounded-lg shadow p-6">
+    <div class="flex items-center">
+      <div class="p-3 rounded-full bg-blue-100 text-blue-500">
+        <i data-lucide="settings" class="w-6 h-6"></i>
+      </div>
+      <div class="ml-4">
+        <p class="text-sm text-gray-500">Tổng cấu hình</p>
+        <p class="text-2xl font-bold">@Model.TotalConfigs</p>
+      </div>
+    </div>
+  </div>
+  
+  <div class="bg-white rounded-lg shadow p-6">
+    <div class="flex items-center">
+      <div class="p-3 rounded-full bg-green-100 text-green-500">
+        <i data-lucide="credit-card" class="w-6 h-6"></i>
+      </div>
+      <div class="ml-4">
+        <p class="text-sm text-gray-500">Cấu hình SEPay</p>
+        <p class="text-2xl font-bold">@Model.SEPayCount</p>
+      </div>
+    </div>
+  </div>
+  
+  <div class="bg-white rounded-lg shadow p-6">
+    <div class="flex items-center">
+      <div class="p-3 rounded-full bg-purple-100 text-purple-500">
+        <i data-lucide="cog" class="w-6 h-6"></i>
+      </div>
+      <div class="ml-4">
+        <p class="text-sm text-gray-500">Cấu hình hệ thống</p>
+        <p class="text-2xl font-bold">@Model.SystemCount</p>
+      </div>
+    </div>
+  </div>
+  
+  <div class="bg-white rounded-lg shadow p-6">
+    <div class="flex items-center">
+      <div class="p-3 rounded-full bg-orange-100 text-orange-500">
+        <i data-lucide="info" class="w-6 h-6"></i>
+      </div>
+      <div class="ml-4">
+        <p class="text-sm text-gray-500">Cấu hình chung</p>
+        <p class="text-2xl font-bold">@Model.GeneralCount</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tabs -->
+<div class="bg-white rounded-lg shadow mb-6">
+  <div class="border-b border-gray-200">
+    <nav class="-mb-px flex space-x-8 px-6">
+      <button id="allTab" class="tab-button active py-4 px-1 border-b-2 border-blue-500 font-medium text-sm text-blue-600">
+        Tất cả cấu hình
+      </button>
+      <button id="sepayTab" class="tab-button py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">
+        SEPay
+      </button>
+      <button id="systemTab" class="tab-button py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">
+        Hệ thống
+      </button>
+      <button id="generalTab" class="tab-button py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">
+        Chung
+      </button>
+    </nav>
+  </div>
+</div>
+
+<!-- Tab Content -->
+<div class="bg-white rounded-lg shadow">
+  <!-- Tab 1: Tất cả cấu hình -->
+  <div id="allContent" class="tab-content p-6">
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">KEY</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">VALUE</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">TYPE</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">DESCRIPTION</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">STATUS</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+                        @foreach (var config in Model.AllConfigs)
+          {
+            <tr>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">@config.ConfigKey</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                @if (config.IsEncrypted)
+                {
+                  <span class="text-gray-400">********</span>
+                }
+                else
+                {
+                  @config.ConfigValue
+                }
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full 
+                  @(config.ConfigType == "SEPay" ? "bg-blue-100 text-blue-800" : 
+                    config.ConfigType == "System" ? "bg-purple-100 text-purple-800" : 
+                    "bg-gray-100 text-gray-800")">
+                  @config.ConfigType
+                </span>
+              </td>
+              <td class="px-6 py-4 text-sm text-gray-500">@config.Description</td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full 
+                  @(config.IsActive ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800")">
+                  @(config.IsActive ? "Active" : "Inactive")
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                <button onclick="editConfig(@config.ConfigId)" class="text-blue-600 hover:text-blue-900 mr-3">
+                  <i data-lucide="edit" class="w-4 h-4"></i>
+                </button>
+                <button onclick="deleteConfig(@config.ConfigId)" class="text-red-600 hover:text-red-900">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Tab 2: SEPay -->
+  <div id="sepayContent" class="tab-content p-6" style="display: none;">
+    <form id="sepayForm">
+      @{
+        var bankCodeConfig = Model.SEPayConfigs.FirstOrDefault(c => c.ConfigKey == "SEPAY_BANK_CODE");
+        var otherConfigs = Model.SEPayConfigs.Where(c => c.ConfigKey != "SEPAY_BANK_CODE").OrderBy(c => c.ConfigKey).ToList();
+      }
+      
+      @* Mã ngân hàng - hiển thị đầu tiên với dropdown *@
+      @if (bankCodeConfig != null)
+      {
+        <div class="mb-6">
+          <label class="block text-sm font-medium text-gray-700 mb-2">@bankCodeConfig.Description</label>
+          <div class="flex items-center space-x-4">
+            <select name="@bankCodeConfig.ConfigKey" 
+                    class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+              <option value="">-- Chọn ngân hàng --</option>
+              @foreach (var bank in Model.SupportedBanks)
+              {
+                @if (bank.Code == bankCodeConfig.ConfigValue)
+                {
+                  <option value="@bank.Code" selected>
+                    @bank.ShortName (@bank.Code)
+                  </option>
+                }
+                else
+                {
+                  <option value="@bank.Code">
+                    @bank.ShortName (@bank.Code)
+                  </option>
+                }
+              }
+            </select>
+            <span class="text-sm text-gray-500">@bankCodeConfig.ConfigKey</span>
+          </div>
+        </div>
+      }
+      
+      @* Các trường cấu hình khác *@
+      @foreach (var config in otherConfigs)
+      {
+        <div class="mb-6">
+          <label class="block text-sm font-medium text-gray-700 mb-2">@config.Description</label>
+          <div class="flex items-center space-x-4">
+            @if (config.ConfigKey == "SEPAY_API_TOKEN")
+            {
+              <input type="password" 
+                     name="@config.ConfigKey" 
+                     value="@config.ConfigValue" 
+                     class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                     placeholder="@config.Description">
+            }
+            else
+            {
+              <input type="text" 
+                     name="@config.ConfigKey" 
+                     value="@config.ConfigValue" 
+                     class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                     placeholder="@config.Description">
+            }
+            <span class="text-sm text-gray-500">@config.ConfigKey</span>
+          </div>
+        </div>
+      }
+      
+      <div class="flex justify-end">
+        <button type="button" onclick="updateSEPayConfigs()" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+          <i data-lucide="save" class="w-4 h-4 mr-2"></i>
+          Cập nhật SEPay
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Tab 3: Hệ thống -->
+  <div id="systemContent" class="tab-content p-6" style="display: none;">
+    <form id="systemForm">
+      @foreach (var config in Model.SystemConfigs)
+      {
+        <div class="mb-6">
+          <label class="block text-sm font-medium text-gray-700 mb-2">@config.Description</label>
+          <div class="flex items-center space-x-4">
+            @if (config.DataType == "bool")
+            {
+              <select name="@config.ConfigKey" class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <option value="true" selected="@(config.ConfigValue == "true")">Có</option>
+                <option value="false" selected="@(config.ConfigValue == "false")">Không</option>
+              </select>
+            }
+            else
+            {
+              <input type="@(config.DataType == "int" ? "number" : "text")" 
+                     name="@config.ConfigKey" 
+                     value="@config.ConfigValue" 
+                     class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                     placeholder="@config.Description">
+            }
+            <span class="text-sm text-gray-500">@config.ConfigKey</span>
+          </div>
+        </div>
+      }
+      <div class="flex justify-end">
+        <button type="button" onclick="updateSystemConfigs()" class="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors">
+          <i data-lucide="save" class="w-4 h-4 mr-2"></i>
+          Cập nhật hệ thống
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Tab 4: Chung -->
+  <div id="generalContent" class="tab-content p-6" style="display: none;">
+    <form id="generalForm">
+      @foreach (var config in Model.GeneralConfigs)
+      {
+        <div class="mb-6">
+          <label class="block text-sm font-medium text-gray-700 mb-2">@config.Description</label>
+          <div class="flex items-center space-x-4">
+            <input type="@(config.DataType == "int" ? "number" : "text")" 
+                   name="@config.ConfigKey" 
+                   value="@config.ConfigValue" 
+                   class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                   placeholder="@config.Description">
+            <span class="text-sm text-gray-500">@config.ConfigKey</span>
+          </div>
+        </div>
+      }
+      <div class="flex justify-end">
+        <button type="button" onclick="updateGeneralConfigs()" class="bg-orange-600 text-white px-6 py-2 rounded-lg hover:bg-orange-700 transition-colors">
+          <i data-lucide="save" class="w-4 h-4 mr-2"></i>
+          Cập nhật chung
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Edit Modal -->
+<div id="editModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+  <div class="flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <h3 class="text-lg font-medium text-gray-900">Chỉnh sửa cấu hình</h3>
+      </div>
+      <form id="editForm">
+        <div class="px-6 py-4 space-y-4">
+          <input type="hidden" id="editConfigId" name="ConfigId">
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">KEY</label>
+            <input type="text" id="editConfigKey" name="ConfigKey" readonly class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50">
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">VALUE</label>
+            <input type="text" id="editConfigValue" name="ConfigValue" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Mô tả</label>
+            <input type="text" id="editDescription" name="Description" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Trạng thái</label>
+            <select id="editIsActive" name="IsActive" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="true">Active</option>
+              <option value="false">Inactive</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="px-6 py-4 bg-gray-50 flex justify-end space-x-3">
+          <button type="button" onclick="closeEditModal()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+            Hủy
+          </button>
+          <button type="button" onclick="saveEditConfig()" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700">
+            Lưu
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+// Tab switching
+document.addEventListener('DOMContentLoaded', function() {
+  const tabs = document.querySelectorAll('.tab-button');
+  const contents = document.querySelectorAll('.tab-content');
+  
+  tabs.forEach(tab => {
+    tab.addEventListener('click', function() {
+      const targetId = this.id.replace('Tab', 'Content');
+      
+      // Remove active class from all tabs
+      tabs.forEach(t => t.classList.remove('active', 'border-blue-500', 'text-blue-600'));
+      tabs.forEach(t => t.classList.add('border-transparent', 'text-gray-500'));
+      
+      // Add active class to clicked tab
+      this.classList.add('active', 'border-blue-500', 'text-blue-600');
+      this.classList.remove('border-transparent', 'text-gray-500');
+      
+      // Hide all contents
+      contents.forEach(c => c.style.display = 'none');
+      
+      // Show target content
+      document.getElementById(targetId).style.display = 'block';
+    });
+  });
+});
+
+// Edit config
+function editConfig(configId) {
+  // Get config data (you'll need to implement this)
+  fetch(`/Admin/GetConfig/${configId}`)
+    .then(response => response.json())
+    .then(data => {
+      document.getElementById('editConfigId').value = data.configId;
+      document.getElementById('editConfigKey').value = data.configKey;
+      document.getElementById('editConfigValue').value = data.configValue;
+      document.getElementById('editDescription').value = data.description;
+      document.getElementById('editIsActive').value = data.isActive;
+      
+      document.getElementById('editModal').classList.remove('hidden');
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('Có lỗi xảy ra khi tải dữ liệu cấu hình');
+    });
+}
+
+// Close edit modal
+function closeEditModal() {
+  document.getElementById('editModal').classList.add('hidden');
+}
+
+// Save edit config
+function saveEditConfig() {
+  const formData = new FormData(document.getElementById('editForm'));
+  
+  fetch('/Admin/UpdateConfig', {
+    method: 'POST',
+    body: formData
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      alert('Cập nhật cấu hình thành công!');
+      location.reload();
+    } else {
+      alert('Có lỗi xảy ra: ' + data.message);
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    alert('Có lỗi xảy ra khi cập nhật cấu hình');
+  });
+}
+
+// Delete config
+function deleteConfig(configId) {
+  if (confirm('Bạn có chắc chắn muốn xóa cấu hình này?')) {
+    fetch(`/Admin/DeleteConfig/${configId}`, {
+      method: 'DELETE'
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        alert('Xóa cấu hình thành công!');
+        location.reload();
+      } else {
+        alert('Có lỗi xảy ra: ' + data.message);
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('Có lỗi xảy ra khi xóa cấu hình');
+    });
+  }
+}
+
+// Update SEPay configs
+function updateSEPayConfigs() {
+  const formData = new FormData(document.getElementById('sepayForm'));
+  
+  fetch('/Admin/UpdateConfigs', {
+    method: 'POST',
+    body: formData
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      alert('Cập nhật cấu hình SEPay thành công!');
+      location.reload();
+    } else {
+      alert('Có lỗi xảy ra: ' + data.message);
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    alert('Có lỗi xảy ra khi cập nhật cấu hình SEPay');
+  });
+}
+
+// Update System configs
+function updateSystemConfigs() {
+  const formData = new FormData(document.getElementById('systemForm'));
+  
+  fetch('/Admin/UpdateConfigs', {
+    method: 'POST',
+    body: formData
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      alert('Cập nhật cấu hình hệ thống thành công!');
+      location.reload();
+    } else {
+      alert('Có lỗi xảy ra: ' + data.message);
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    alert('Có lỗi xảy ra khi cập nhật cấu hình hệ thống');
+  });
+}
+
+// Update General configs
+function updateGeneralConfigs() {
+  const formData = new FormData(document.getElementById('generalForm'));
+  
+  fetch('/Admin/UpdateConfigs', {
+    method: 'POST',
+    body: formData
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      alert('Cập nhật cấu hình chung thành công!');
+      location.reload();
+    } else {
+      alert('Có lỗi xảy ra: ' + data.message);
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    alert('Có lỗi xảy ra khi cập nhật cấu hình chung');
+  });
+}
+</script>

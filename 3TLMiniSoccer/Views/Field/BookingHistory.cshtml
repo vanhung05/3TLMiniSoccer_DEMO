@@ -1,0 +1,389 @@
+@model List<_3TLMiniSoccer.Models.Booking>
+
+@{
+    ViewData["Title"] = "Lịch sử đặt sân";
+}
+
+@section Styles {
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#16a34a',
+                        secondary: '#0ea5e9',
+                        accent: '#f59e0b',
+                        success: '#10b981',
+                        warning: '#f59e0b',
+                        danger: '#ef4444',
+                        dark: '#0f172a',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .status-booked {
+            background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+            color: #065f46;
+            border: 1px solid #10b981;
+        }
+        .status-confirmed {
+            background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+            color: #1e40af;
+            border: 1px solid #3b82f6;
+        }
+        .status-cancelled {
+            background: linear-gradient(135deg, #fee2e2, #fecaca);
+            color: #991b1b;
+            border: 1px solid #ef4444;
+        }
+        .status-pending {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            color: #92400e;
+            border: 1px solid #f59e0b;
+        }
+        .status-completed {
+            background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+            color: #374151;
+            border: 1px solid #9ca3af;
+        }
+    </style>
+}
+
+<!-- Header with Logo -->
+<div class="bg-white shadow-sm border-b">
+    <div class="container mx-auto px-4 py-4">
+        <div class="text-center">
+            <h1 class="text-2xl font-bold text-gray-900">Lịch sử đặt sân</h1>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="bg-gray-50 min-h-screen py-8">
+    <div class="container mx-auto px-4">
+        <div class="max-w-7xl mx-auto">
+            
+            @if (Model != null && Model.Any())
+            {
+                <!-- Summary Stats -->
+                <div class="mb-8 grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div class="bg-white rounded-lg shadow-sm border p-6">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-list text-blue-600"></i>
+                                </div>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-500">Tổng đặt sân</p>
+                                <p class="text-2xl font-semibold text-gray-900">@Model.Count</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow-sm border p-6">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-check-circle text-green-600"></i>
+                                </div>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-500">Đã xác nhận</p>
+                                <p class="text-2xl font-semibold text-gray-900">@Model.Count(b => b.Status == "Confirmed")</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow-sm border p-6">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-times-circle text-red-600"></i>
+                                </div>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-500">Đã hủy</p>
+                                <p class="text-2xl font-semibold text-gray-900">@Model.Count(b => b.Status == "Cancelled")</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow-sm border p-6">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <div class="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-dollar-sign text-yellow-600"></i>
+                                </div>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-500">Tổng chi phí</p>
+                                <p class="text-2xl font-semibold text-gray-900">@Model.Sum(b => b.TotalPrice).ToString("N0") VND</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Booking History Table -->
+                <div class="bg-white rounded-lg shadow-sm border">
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-gray-50 border-b">
+                                <tr>
+                                    <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">Mã đặt sân</th>
+                                    <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">Sân</th>
+                                    <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">Thời gian bắt đầu</th>
+                                    <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">Thời gian kết thúc</th>
+                                    <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">Trạng thái</th>
+                                    <th class="px-6 py-4 text-center text-sm font-semibold text-gray-900">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200">
+                                @foreach (var booking in Model)
+                                {
+                                    <tr class="hover:bg-gray-50 transition-colors">
+                                        <td class="px-6 py-4">
+                                            <div class="text-sm font-medium text-gray-900">
+                                                @booking.BookingId.ToString("D3")
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <div class="text-sm text-gray-900">
+                                                @booking.Field?.FieldName
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <div class="text-sm text-gray-900">
+                                                @booking.BookingDate.ToString("dd/MM/yyyy") @booking.StartTime.ToString(@"hh\:mm\:ss")
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <div class="text-sm text-gray-900">
+                                                @booking.BookingDate.ToString("dd/MM/yyyy") @booking.EndTime.ToString(@"hh\:mm\:ss")
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            @{
+                                                var statusClass = booking.Status?.ToLower() switch
+                                                {
+                                                    "confirmed" => "status-confirmed",
+                                                    "booked" => "status-booked",
+                                                    "pending" => "status-pending",
+                                                    "cancelled" => "status-cancelled",
+                                                    "completed" => "status-completed",
+                                                    _ => "status-booked"
+                                                };
+                                                
+                                                var statusText = booking.Status?.ToLower() switch
+                                                {
+                                                    "confirmed" => "Đã xác nhận",
+                                                    "booked" => "Đã đặt",
+                                                    "pending" => "Đang chờ duyệt",
+                                                    "cancelled" => "Đã hủy",
+                                                    "completed" => "Hoàn thành",
+                                                    _ => "Đã đặt"
+                                                };
+                                            }
+                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium @statusClass">
+                                                @statusText
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center justify-center space-x-2">
+                                                @if (booking.Status?.ToLower() == "confirmed" || booking.Status?.ToLower() == "booked")
+                                                {
+                                                    <button class="inline-flex items-center px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs font-medium rounded-md transition-colors" 
+                                                            data-booking-id="@booking.BookingId">
+                                                        <i class="fas fa-times mr-1"></i>
+                                                        Huỷ sân
+                                                    </button>
+                                                }
+                                                @if (booking.Status?.ToLower() == "cancelled")
+                                                {
+                                                    <button class="inline-flex items-center px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white text-xs font-medium rounded-md transition-colors view-reason-btn" 
+                                                            data-booking-id="@booking.BookingId" 
+                                                            data-notes="@(booking.Notes ?? "")">
+                                                        <i class="fas fa-info-circle mr-1"></i>
+                                                        Xem lý do
+                                                    </button>
+                                                }
+                                                <button class="inline-flex items-center px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium rounded-md transition-colors">
+                                                    <i class="fas fa-file-invoice mr-1"></i>
+                                                    Hóa đơn
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <!-- Empty State -->
+                <div class="text-center py-20">
+                    <div class="w-32 h-32 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-full flex items-center justify-center mx-auto mb-8">
+                        <i class="fas fa-futbol text-6xl text-primary/60"></i>
+                    </div>
+                    <h3 class="text-3xl font-bold text-gray-900 mb-4">Chưa có lịch sử đặt sân</h3>
+                    <p class="text-lg text-gray-600 mb-8 max-w-md mx-auto">
+                        Bạn chưa có lần đặt sân nào. Hãy bắt đầu trải nghiệm dịch vụ của chúng tôi!
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                        <a href="@Url.Action("Index")" class="inline-flex items-center px-8 py-4 bg-gradient-to-r from-primary to-secondary text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105">
+                            <i class="fas fa-plus mr-3"></i>
+                            Đặt sân ngay
+                        </a>
+                        <a href="@Url.Action("Index")" class="inline-flex items-center px-8 py-4 bg-white border-2 border-primary text-primary rounded-xl font-semibold hover:bg-primary hover:text-white transition-all duration-300">
+                            <i class="fas fa-home mr-3"></i>
+                            Về trang chủ
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Modal hiển thị lý do hủy -->
+<div id="cancellationModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 hidden">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <div class="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 rounded-full mb-4">
+                <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 text-center mb-4">Lý do hủy đặt sân</h3>
+            <div class="mt-2 px-7 py-3">
+                <p class="text-sm text-gray-500 text-center mb-4">
+                    Mã đặt sân: <span id="modalBookingId" class="font-semibold text-gray-900"></span>
+                </p>
+                <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <p class="text-sm text-gray-700" id="modalCancellationReason">
+                        <!-- Lý do hủy sẽ được hiển thị ở đây -->
+                    </p>
+                </div>
+            </div>
+            <div class="items-center px-4 py-3">
+                <button id="closeModal" class="w-full px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md shadow-sm hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-300">
+                    Đóng
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add click handlers for action buttons
+            const cancelButtons = document.querySelectorAll('button[class*="bg-red-500"]');
+            const invoiceButtons = document.querySelectorAll('button[class*="bg-blue-500"]');
+            const viewReasonButtons = document.querySelectorAll('.view-reason-btn');
+            
+            cancelButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const bookingId = this.getAttribute('data-booking-id') || this.closest('tr').querySelector('[data-booking-id]')?.getAttribute('data-booking-id');
+                    if (!bookingId) {
+                        alert('Không tìm thấy ID đặt sân');
+                        return;
+                    }
+                    
+                    if (confirm('Bạn có chắc chắn muốn hủy đặt sân này?')) {
+                        const reason = prompt('Nhập lý do hủy đặt sân (không bắt buộc):');
+                        if (reason !== null) { // User didn't cancel the prompt
+                            cancelBooking(bookingId, reason);
+                        }
+                    }
+                });
+            });
+            
+            invoiceButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // TODO: Implement invoice functionality
+                    alert('Chức năng xem hóa đơn sẽ được triển khai sớm!');
+                });
+            });
+
+            // Add click handler for view reason buttons
+            viewReasonButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const bookingId = this.getAttribute('data-booking-id');
+                    const notes = this.getAttribute('data-notes');
+                    showCancellationReason(bookingId, notes);
+                });
+            });
+
+            // Modal functionality
+            const modal = document.getElementById('cancellationModal');
+            const closeModal = document.getElementById('closeModal');
+
+            closeModal.addEventListener('click', function() {
+                modal.classList.add('hidden');
+            });
+
+            // Close modal when clicking outside
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    modal.classList.add('hidden');
+                }
+            });
+        });
+
+        function cancelBooking(bookingId, reason) {
+            fetch(`/Field/CancelBooking/${bookingId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ reason: reason })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Đã hủy đặt sân thành công!');
+                    location.reload();
+                } else {
+                    alert('Lỗi khi hủy đặt sân: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Lỗi khi hủy đặt sân');
+            });
+        }
+
+        function showCancellationReason(bookingId, notes) {
+            const modal = document.getElementById('cancellationModal');
+            const modalBookingId = document.getElementById('modalBookingId');
+            const modalCancellationReason = document.getElementById('modalCancellationReason');
+
+            // Hiển thị mã đặt sân
+            modalBookingId.textContent = bookingId.toString().padStart(3, '0');
+
+            // Trích xuất lý do hủy từ notes
+            let cancellationReason = "Không có lý do được cung cấp";
+            if (notes && notes.includes("Lý do hủy:")) {
+                const reasonStart = notes.indexOf("Lý do hủy:") + "Lý do hủy:".length;
+                const extractedReason = notes.substring(reasonStart).trim();
+                if (extractedReason) {
+                    cancellationReason = extractedReason;
+                }
+            }
+
+            // Hiển thị lý do hủy
+            modalCancellationReason.textContent = cancellationReason;
+
+            // Hiển thị modal
+            modal.classList.remove('hidden');
+        }
+    </script>
+}

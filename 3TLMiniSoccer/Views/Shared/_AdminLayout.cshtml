@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>@ViewData["Title"] - 3TL MINI SOCCER</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- SignalR - Multiple CDN fallbacks -->
+  <script src="https://unpkg.com/@@microsoft/signalr@latest/dist/browser/signalr.min.js" 
+          onerror="loadSignalRFallback()"></script>
+  <script>
+      let signalRLoadAttempts = 0;
+      const signalRCDNs = [
+          'https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js',
+          'https://cdn.jsdelivr.net/npm/@@microsoft/signalr@8.0.0/dist/browser/signalr.min.js',
+          'https://unpkg.com/@@microsoft/signalr@8.0.0/dist/browser/signalr.min.js'
+      ];
+      
+      function loadSignalRFallback() {
+          signalRLoadAttempts++;
+          console.log(`Primary SignalR CDN failed, trying fallback ${signalRLoadAttempts}...`);
+          
+          if (signalRLoadAttempts <= signalRCDNs.length) {
+              var script = document.createElement('script');
+              script.src = signalRCDNs[signalRLoadAttempts - 1];
+              script.onerror = loadSignalRFallback;
+              script.onload = function() {
+                  console.log(`SignalR loaded successfully from fallback ${signalRLoadAttempts}`);
+              };
+              document.head.appendChild(script);
+          } else {
+              console.log('All SignalR CDNs failed, using fallback system');
+              window.signalR = null;
+          }
+      }
+  </script>
+  <style>
+    .sidebar-gradient {
+      background: linear-gradient(to bottom, #0f172a, #1e293b);
+    }
+    .sidebar-item-active {
+      border-left: 4px solid #22c55e;
+      background-color: rgba(34, 197, 94, 0.1);
+    }
+    .sidebar-item-hover:hover {
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+    .submenu-item-active {
+      border-left: 4px solid #22c55e;
+      background-color: rgba(34, 197, 94, 0.15);
+      color: white !important;
+    }
+    .submenu-item-hover:hover {
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+    .scrollbar-thin::-webkit-scrollbar {
+      width: 4px;
+    }
+    .scrollbar-thin::-webkit-scrollbar-thumb {
+      background-color: #64748b;
+      border-radius: 2px;
+    }
+  </style>
+  <style>
+    /* Toast Notification Styles */
+    .toast-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 10000;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    .toast {
+      min-width: 350px;
+      max-width: 500px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+      padding: 16px;
+      opacity: 0;
+      transform: translateX(400px);
+      transition: all 0.3s ease;
+      animation: slideInRight 0.3s ease forwards;
+    }
+    
+    .toast.show {
+      animation: slideInRight 0.3s ease forwards;
+    }
+    
+    .toast.hide {
+      animation: slideOutRight 0.3s ease forwards;
+    }
+    
+    .toast-success {
+      border-left: 4px solid #22c55e;
+    }
+    
+    .toast-error {
+      border-left: 4px solid #ef4444;
+    }
+    
+    .toast-warning {
+      border-left: 4px solid #f59e0b;
+    }
+    
+    .toast-info {
+      border-left: 4px solid #3b82f6;
+    }
+    
+    .toast-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    
+    .toast-icon.success {
+      background: #dcfce7;
+    }
+    
+    .toast-icon.error {
+      background: #fee2e2;
+    }
+    
+    .toast-icon.warning {
+      background: #fef3c7;
+    }
+    
+    .toast-icon.info {
+      background: #dbeafe;
+    }
+    
+    .toast-content {
+      flex: 1;
+      margin-left: 16px;
+    }
+    
+    .toast-title {
+      font-weight: bold;
+      font-size: 16px;
+      margin-bottom: 4px;
+    }
+    
+    .toast-message {
+      font-size: 14px;
+      color: #6b7280;
+    }
+    
+    .toast-close {
+      width: 24px;
+      height: 24px;
+      cursor: pointer;
+      opacity: 0.5;
+      transition: opacity 0.2s;
+    }
+    
+    .toast-close:hover {
+      opacity: 1;
+    }
+    
+    @@keyframes slideInRight {
+      from {
+        opacity: 0;
+        transform: translateX(400px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+    
+    @@keyframes slideOutRight {
+      from {
+        opacity: 1;
+        transform: translateX(0);
+      }
+      to {
+        opacity: 0;
+        transform: translateX(400px);
+      }
+    }
+    
+    /* Loading Overlay */
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+    
+    .loading-overlay.show {
+      opacity: 1;
+      visibility: visible;
+    }
+    
+    .loading-spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid #f3f4f6;
+      border-top-color: #22c55e;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    
+    @@keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+  @await RenderSectionAsync("Styles", required: false)
+</head>
+<body class="bg-gray-100 font-sans text-gray-800">
+  <!-- Loading Overlay -->
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="loading-spinner"></div>
+  </div>
+  
+  <!-- Toast Container -->
+  <div id="toastContainer" class="toast-container"></div>
+  <div class="flex h-screen overflow-hidden">
+    <!-- Sidebar -->
+    <div class="sidebar-gradient text-white w-64 flex-shrink-0 transition-all duration-300 ease-in-out" id="sidebar">
+      <div class="p-4 flex items-center justify-between border-b border-gray-700">
+        <div class="flex items-center">
+          <div class="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center">
+            <i data-lucide="football" class="w-5 h-5"></i>
+          </div>
+          <span class="ml-3 font-bold text-lg whitespace-nowrap" id="sidebar-logo-text">3TL MINI SOCCER</span>
+        </div>
+        <button id="sidebar-toggle" class="text-gray-400 hover:text-white">
+          <i data-lucide="chevron-left" class="w-5 h-5"></i>
+        </button>
+      </div>
+      
+      <div class="overflow-y-auto h-[calc(100vh-68px)] scrollbar-thin">
+        <div class="p-2 space-y-1">
+          <!-- Dashboard -->
+          <div class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "Index" ? "sidebar-item-active" : "sidebar-item-hover") rounded-md">
+            <a href="/Admin" class="flex items-center p-3 @(ViewContext.RouteData.Values["Action"]?.ToString() == "Index" ? "text-white" : "text-gray-300 hover:text-white")">
+              <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+              <span class="ml-3">Dashboard</span>
+            </a>
+          </div>
+          
+          
+          <!-- Products -->
+          <div class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "Products" ? "sidebar-item-active" : "sidebar-item-hover") rounded-md">
+            <a href="/Admin/Products" class="flex items-center p-3 @(ViewContext.RouteData.Values["Action"]?.ToString() == "Products" ? "text-white" : "text-gray-300 hover:text-white")">
+              <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+              <span class="ml-3">Sản phẩm</span>
+            </a>
+          </div>
+          
+          
+          <!-- Fields -->
+          <div class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "Fields" ? "sidebar-item-active" : "sidebar-item-hover") rounded-md">
+            <a href="/Admin/Fields" class="flex items-center p-3 @(ViewContext.RouteData.Values["Action"]?.ToString() == "Fields" ? "text-white" : "text-gray-300 hover:text-white")">
+              <i data-lucide="map-pin" class="w-5 h-5"></i>
+              <span class="ml-3">Sân</span>
+            </a>
+          </div>
+          
+          <!-- Account Management -->
+          <div class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "Accounts" ? "sidebar-item-active" : "sidebar-item-hover") rounded-md">
+            <a href="/Admin/Accounts" class="flex items-center p-3 @(ViewContext.RouteData.Values["Action"]?.ToString() == "Accounts" ? "text-white" : "text-gray-300 hover:text-white")">
+              <i data-lucide="users" class="w-5 h-5"></i>
+              <span class="ml-3">Quản lý tài khoản</span>
+            </a>
+          </div>
+          
+          
+          <!-- Others (with submenu) -->
+          <div class="sidebar-item-hover rounded-md">
+            <div class="flex items-center justify-between p-3 cursor-pointer" id="others-menu">
+              <div class="flex items-center">
+                <i data-lucide="more-horizontal" class="w-5 h-5"></i>
+                <span class="ml-3">Khác</span>
+              </div>
+              <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-200 @(ViewContext.RouteData.Values["Action"]?.ToString() == "Vouchers" || ViewContext.RouteData.Values["Action"]?.ToString() == "Contact" ? "rotate-180" : "")" id="others-chevron"></i>
+            </div>
+            <div class="pl-4 mt-1 space-y-1 @(ViewContext.RouteData.Values["Action"]?.ToString() == "Vouchers" || ViewContext.RouteData.Values["Action"]?.ToString() == "Contact" ? "" : "hidden")" id="others-submenu">
+              <a href="/Admin/Vouchers" class="flex items-center p-2 pl-8 @(ViewContext.RouteData.Values["Action"]?.ToString() == "Vouchers" ? "submenu-item-active" : "submenu-item-hover text-gray-300 hover:text-white") rounded">
+                <i data-lucide="gift" class="w-4 h-4"></i>
+                <span class="ml-3">Mã giảm giá</span>
+              </a>
+              <a href="/Admin/Contact" class="flex items-center p-2 pl-8 @(ViewContext.RouteData.Values["Action"]?.ToString() == "Contact" ? "submenu-item-active" : "submenu-item-hover text-gray-300 hover:text-white") rounded">
+                <i data-lucide="message-square" class="w-4 h-4"></i>
+                <span class="ml-3">Liên hệ</span>
+              </a>
+            </div>
+          </div>
+          
+          <!-- Booking Management (with submenu) -->
+          <div class="sidebar-item-hover rounded-md">
+            <div class="flex items-center justify-between p-3 cursor-pointer" id="booking-menu">
+              <div class="flex items-center">
+                <i data-lucide="clipboard-list" class="w-5 h-5"></i>
+                <span class="ml-3">Quản lý phiếu đặt</span>
+              </div>
+              <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-200 @(ViewContext.RouteData.Values["Action"]?.ToString() == "BookingSchedule" || ViewContext.RouteData.Values["Action"]?.ToString() == "Orders" || ViewContext.RouteData.Values["Action"]?.ToString() == "Sessions" || ViewContext.RouteData.Values["Action"]?.ToString() == "CheckIn" ? "rotate-180" : "")" id="booking-chevron"></i>
+            </div>
+            <div class="pl-4 mt-1 space-y-1 @(ViewContext.RouteData.Values["Action"]?.ToString() == "BookingSchedule" || ViewContext.RouteData.Values["Action"]?.ToString() == "Orders" || ViewContext.RouteData.Values["Action"]?.ToString() == "Sessions" || ViewContext.RouteData.Values["Action"]?.ToString() == "CheckIn" ? "" : "hidden")" id="booking-submenu">
+              <a href="/Admin/BookingSchedule" class="flex items-center p-2 pl-8 @(ViewContext.RouteData.Values["Action"]?.ToString() == "BookingSchedule" ? "submenu-item-active" : "submenu-item-hover text-gray-300 hover:text-white") rounded">
+                <i data-lucide="calendar" class="w-4 h-4"></i>
+                <span class="ml-3">Tất cả phiếu đặt</span>
+              </a>
+              <a href="/Admin/Orders" class="flex items-center p-2 pl-8 @(ViewContext.RouteData.Values["Action"]?.ToString() == "Orders" ? "submenu-item-active" : "submenu-item-hover text-gray-300 hover:text-white") rounded">
+                <i data-lucide="file-text" class="w-4 h-4"></i>
+                <span class="ml-3">Đơn hàng</span>
+              </a>
+              <a href="/Admin/Sessions" class="flex items-center p-2 pl-8 @(ViewContext.RouteData.Values["Action"]?.ToString() == "Sessions" || ViewContext.RouteData.Values["Action"]?.ToString() == "CheckIn" ? "submenu-item-active" : "submenu-item-hover text-gray-300 hover:text-white") rounded">
+                <i data-lucide="clock" class="w-4 h-4"></i>
+                <span class="ml-3">Quản lý Session</span>
+              </a>
+            </div>
+          </div>
+          
+          <!-- Category Management -->
+          <div class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "Categories" ? "sidebar-item-active" : "sidebar-item-hover") rounded-md">
+            <a href="/Admin/Categories" class="flex items-center p-3 @(ViewContext.RouteData.Values["Action"]?.ToString() == "Categories" ? "text-white" : "text-gray-300 hover:text-white")">
+              <i data-lucide="layers" class="w-5 h-5"></i>
+              <span class="ml-3">Quản lý thể loại</span>
+            </a>
+          </div>
+          
+          <!-- Reports (with submenu) -->
+          <div class="sidebar-item-hover rounded-md">
+            <div class="flex items-center justify-between p-3 cursor-pointer" id="reports-menu">
+              <div class="flex items-center">
+                <i data-lucide="bar-chart-2" class="w-5 h-5"></i>
+                <span class="ml-3">Báo cáo thống kê</span>
+              </div>
+              <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-200 @(ViewContext.RouteData.Values["Action"]?.ToString() == "BookingStats" || ViewContext.RouteData.Values["Action"]?.ToString() == "SalesStats" ? "rotate-180" : "")" id="reports-chevron"></i>
+            </div>
+            <div class="pl-4 mt-1 space-y-1 @(ViewContext.RouteData.Values["Action"]?.ToString() == "BookingStats" || ViewContext.RouteData.Values["Action"]?.ToString() == "SalesStats" ? "" : "hidden")" id="reports-submenu">
+              <a href="/Admin/BookingStats" class="flex items-center p-2 pl-8 @(ViewContext.RouteData.Values["Action"]?.ToString() == "BookingStats" ? "submenu-item-active" : "submenu-item-hover text-gray-300 hover:text-white") rounded">
+                <i data-lucide="trending-up" class="w-4 h-4"></i>
+                <span class="ml-3">Thống kê đặt sân</span>
+              </a>
+              <a href="/Admin/SalesStats" class="flex items-center p-2 pl-8 @(ViewContext.RouteData.Values["Action"]?.ToString() == "SalesStats" ? "submenu-item-active" : "submenu-item-hover text-gray-300 hover:text-white") rounded">
+                <i data-lucide="dollar-sign" class="w-4 h-4"></i>
+                <span class="ml-3">Thống kê bán hàng</span>
+              </a>
+            </div>
+          </div>
+          
+          
+          <!-- Configuration -->
+          <a href="/Admin/SystemConfigs" class="flex items-center p-3 @(ViewContext.RouteData.Values["Action"]?.ToString() == "SystemConfigs" ? "bg-green-600 text-white" : "text-gray-300 hover:text-white hover:bg-gray-700") rounded-md">
+            <i data-lucide="settings" class="w-5 h-5"></i>
+            <span class="ml-3">Cấu hình thanh toán & hệ thống</span>
+          </a>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+      <!-- Topbar -->
+      <header class="bg-green-500 text-white p-4 shadow-md">
+        <div class="flex items-center justify-between">
+          <div class="text-xl font-semibold">@ViewData["Title"]</div>
+          <div class="flex items-center space-x-4">
+            <!-- Notification Bell -->
+            <div class="relative">
+              <button class="relative p-1 rounded-full hover:bg-green-600" id="notification-bell">
+                <i data-lucide="bell" class="w-5 h-5"></i>
+                <span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full hidden" id="notification-badge"></span>
+              </button>
+              
+              <!-- Notification Dropdown -->
+              <div class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50" id="notification-dropdown" style="display: none;">
+                <div class="p-4 border-b border-gray-200">
+                  <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-semibold text-gray-800">Thông báo</h3>
+                    <button class="text-sm text-green-600 hover:text-green-700" id="mark-all-read">Đánh dấu đã đọc</button>
+                  </div>
+                </div>
+                <div class="max-h-96 overflow-y-auto" id="notification-list">
+                  <div class="p-4 text-center text-gray-500" id="no-notifications">
+                    <i data-lucide="bell-off" class="w-8 h-8 mx-auto mb-2"></i>
+                    <p>Chưa có thông báo nào</p>
+                  </div>
+                </div>
+                <div class="p-4 border-t border-gray-200 text-center">
+                  <a href="#" class="text-sm text-green-600 hover:text-green-700">Xem tất cả thông báo</a>
+                </div>
+              </div>
+            </div>
+            <div class="relative">
+              <button class="flex items-center space-x-2 focus:outline-none" id="user-menu-button">
+                <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                  <i data-lucide="user" class="w-4 h-4 text-gray-700"></i>
+                </div>
+                <span class="font-medium">Chào! admin3tl</span>
+                <i data-lucide="chevron-down" class="w-4 h-4"></i>
+              </button>
+              <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 hidden z-10" id="user-menu">
+                <a asp-controller="Account" asp-action="Profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Thông tin</a>
+                <a asp-controller="Account" asp-action="ChangePassword" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Đổi mật khẩu</a>
+                <form asp-controller="Account" asp-action="Logout" method="post" class="block">
+                  @Html.AntiForgeryToken()
+                  <button type="submit" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">Đăng xuất</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+      
+      <!-- Main Content Area -->
+      <main class="flex-1 overflow-y-auto p-6 bg-gray-50">
+        @RenderBody()
+      </main>
+      
+      <!-- Footer -->
+      <footer class="bg-white border-t p-4 text-center text-sm text-gray-500">
+        © 3TL MINI SOCCER 2025
+      </footer>
+    </div>
+  </div>
+
+  <script>   
+    // Initialize Lucide icons
+    lucide.createIcons();
+    
+    // Toggle sidebar collapse
+    const sidebarToggle = document.getElementById('sidebar-toggle');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarLogoText = document.getElementById('sidebar-logo-text');
+    
+    sidebarToggle.addEventListener('click', () => {
+      sidebar.classList.toggle('w-64');
+      sidebar.classList.toggle('w-20');
+      sidebarLogoText.classList.toggle('hidden');
+      
+      // Hide all text in sidebar items when collapsed
+      const sidebarItems = document.querySelectorAll('.sidebar-item-hover span, .sidebar-item-active span');
+      sidebarItems.forEach(item => {
+        if (sidebar.classList.contains('w-20')) {
+          item.style.display = 'none';
+        } else {
+          item.style.display = 'block';
+        }
+      });
+      
+      // Rotate chevron icon
+      const icon = sidebarToggle.querySelector('i');
+      if (sidebar.classList.contains('w-20')) {
+        icon.setAttribute('data-lucide', 'chevron-right');
+      } else {
+        icon.setAttribute('data-lucide', 'chevron-left');
+      }
+      lucide.createIcons();
+    });
+    
+    // Toggle submenus
+    const toggleSubmenu = (buttonId, chevronId, submenuId) => {
+      const button = document.getElementById(buttonId);
+      const chevron = document.getElementById(chevronId);
+      const submenu = document.getElementById(submenuId);
+      
+      // Check if all elements exist before adding event listener
+      if (button && chevron && submenu) {
+        button.addEventListener('click', () => {
+          submenu.classList.toggle('hidden');
+          chevron.classList.toggle('rotate-180');
+        });
+        console.log(`Submenu initialized: ${buttonId}`);
+      } else {
+        console.log(`Submenu elements not found: ${buttonId}, ${chevronId}, ${submenuId}`);
+      }
+    };
+    
+    // Initialize all submenu toggles
+    toggleSubmenu('others-menu', 'others-chevron', 'others-submenu');
+    toggleSubmenu('booking-menu', 'booking-chevron', 'booking-submenu');
+    toggleSubmenu('reports-menu', 'reports-chevron', 'reports-submenu');
+    toggleSubmenu('config-menu', 'config-chevron', 'config-submenu');
+    
+    // Ensure booking submenu is open when on Sessions or CheckIn pages
+    const currentAction = '@ViewContext.RouteData.Values["Action"]?.ToString()';
+    if (currentAction === 'Sessions' || currentAction === 'CheckIn') {
+      const bookingSubmenu = document.getElementById('booking-submenu');
+      const bookingChevron = document.getElementById('booking-chevron');
+      if (bookingSubmenu && bookingChevron) {
+        bookingSubmenu.classList.remove('hidden');
+        bookingChevron.classList.add('rotate-180');
+      }
+    }
+    
+    // Toggle user dropdown
+    const userMenuButton = document.getElementById('user-menu-button');
+    const userMenu = document.getElementById('user-menu');
+    
+    userMenuButton.addEventListener('click', () => {
+      userMenu.classList.toggle('hidden');
+    });
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!userMenuButton.contains(e.target) && !userMenu.contains(e.target)) {
+        userMenu.classList.add('hidden');
+      }
+    });
+    
+    // ===== NOTIFICATION SYSTEM =====
+    let connection;
+    let notificationCount = 0;
+    
+    function initializeNotifications() {
+      // Wait for SignalR to load with multiple attempts
+      let attempts = 0;
+      const maxAttempts = 10; // 10 attempts over 5 seconds
+      
+      function checkSignalR() {
+        attempts++;
+        console.log(`Checking SignalR availability (attempt ${attempts}/${maxAttempts})`);
+        
+        if (typeof signalR !== 'undefined' && signalR) {
+          console.log("SignalR loaded successfully, initializing connection...");
+          initializeSignalRConnection();
+          return;
+        }
+        
+        if (attempts < maxAttempts) {
+          setTimeout(checkSignalR, 500); // Check every 500ms
+        } else {
+          console.error("SignalR is not loaded after all attempts, using fallback system");
+          initializeSimpleNotifications();
+        }
+      }
+      
+      // Start checking after a short delay
+      setTimeout(checkSignalR, 500);
+    }
+    
+    function initializeSignalRConnection() {
+      // Check if user is authenticated before connecting
+      if (!@User.Identity.IsAuthenticated.ToString().ToLower()) {
+        initializeSimpleNotifications();
+        return;
+      }
+      
+      // Create SignalR connection
+      connection = new signalR.HubConnectionBuilder()
+        .withUrl("/notificationHub")
+        .withAutomaticReconnect()
+        .build();
+      
+      // Start connection
+      connection.start().then(function () {
+        console.log("SignalR connected successfully");
+        
+        // Join admin group
+        connection.invoke("JoinAdminGroup").catch(function (err) {
+          console.error("Error joining admin group:", err);
+        });
+      }).catch(function (err) {
+        console.error("Error starting SignalR connection:", err);
+        // Show error message to user
+        showNotificationToast({
+          title: "Lỗi kết nối",
+          message: "Không thể kết nối đến hệ thống thông báo. Vui lòng đăng nhập lại.",
+          type: "error"
+        });
+        // Fallback to simple system if SignalR fails
+        initializeSimpleNotifications();
+      });
+      
+      // Listen for admin notifications
+      connection.on("ReceiveAdminNotification", function (notification) {
+        addNotificationToList(notification);
+        showNotificationToast(notification);
+        updateNotificationBadge();
+      });
+      
+      // Handle connection events
+      connection.onclose(function (err) {
+        // Connection closed
+      });
+      
+      connection.onreconnecting(function () {
+        // Reconnecting...
+      });
+      
+      connection.onreconnected(function () {
+        connection.invoke("JoinAdminGroup").catch(function (err) {
+          console.error("Error rejoining admin group:", err);
+        });
+      });
+    }
+    
+    // Fallback simple notification system
+    function initializeSimpleNotifications() {
+      // Show "no notifications" message by default
+      const noNotifications = document.getElementById('no-notifications');
+      if (noNotifications) {
+        noNotifications.style.display = 'block';
+      }
+      
+    }
+    
+    // Add notification to dropdown list
+    function addNotificationToList(notification) {
+      const notificationList = document.getElementById('notification-list');
+      const noNotifications = document.getElementById('no-notifications');
+      
+      // Hide "no notifications" message
+      if (noNotifications) {
+        noNotifications.style.display = 'none';
+      }
+      
+      // Create notification item
+      const notificationItem = document.createElement('div');
+      notificationItem.className = 'p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer notification-item';
+      notificationItem.setAttribute('data-notification-id', notification.id);
+      
+      const timeAgo = getTimeAgo(notification.timestamp);
+      
+      notificationItem.innerHTML = `
+        <div class="flex items-start">
+          <div class="flex-shrink-0">
+            <i data-lucide="${notification.icon}" class="w-5 h-5 text-green-500"></i>
+          </div>
+          <div class="ml-3 flex-1">
+            <div class="text-sm font-medium text-gray-900">${notification.title}</div>
+            <div class="text-sm text-gray-600 mt-1">${notification.message}</div>
+            <div class="text-xs text-gray-400 mt-1">${timeAgo}</div>
+          </div>
+          <div class="flex-shrink-0">
+            <button class="text-gray-400 hover:text-gray-600" onclick="markAsRead('${notification.id}')">
+              <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+      `;
+      
+      // Insert at the top
+      notificationList.insertBefore(notificationItem, notificationList.firstChild);
+      
+      // Re-initialize Lucide icons
+      lucide.createIcons();
+    }
+    
+    // Show notification toast
+    function showNotificationToast(notification) {
+      const toast = document.createElement('div');
+      toast.className = 'fixed top-4 right-4 bg-white border border-gray-200 rounded-lg shadow-lg p-4 z-50 max-w-sm transform transition-all duration-300 translate-x-full';
+      toast.innerHTML = `
+        <div class="flex items-start">
+          <div class="flex-shrink-0">
+            <i data-lucide="${notification.icon}" class="w-5 h-5 text-green-500"></i>
+          </div>
+          <div class="ml-3 flex-1">
+            <div class="text-sm font-medium text-gray-900">${notification.title}</div>
+            <div class="text-sm text-gray-600 mt-1">${notification.message}</div>
+          </div>
+          <button onclick="this.parentElement.parentElement.remove()" class="ml-2 text-gray-400 hover:text-gray-600">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+      `;
+      
+      document.body.appendChild(toast);
+      
+      // Animate in
+      setTimeout(() => {
+        toast.classList.remove('translate-x-full');
+      }, 100);
+      
+      // Auto remove after 5 seconds
+      setTimeout(() => {
+        toast.classList.add('translate-x-full');
+        setTimeout(() => {
+          if (toast.parentNode) {
+            toast.remove();
+          }
+        }, 300);
+      }, 5000);
+      
+      // Re-initialize Lucide icons
+      lucide.createIcons();
+    }
+    
+    // Update notification badge
+    function updateNotificationBadge() {
+      const badge = document.getElementById('notification-badge');
+      if (badge) {
+        badge.textContent = notificationCount;
+        badge.style.display = notificationCount > 0 ? 'flex' : 'none';
+      }
+    }
+    
+    // Update notification display
+    function updateNotificationDisplay() {
+      const notificationList = document.getElementById('notification-list');
+      const noNotifications = document.getElementById('no-notifications');
+      const hasNotifications = notificationList.querySelectorAll('.notification-item').length > 0;
+      
+      if (noNotifications) {
+        noNotifications.style.display = hasNotifications ? 'none' : 'block';
+      }
+    }
+    
+    // Mark notification as read
+    function markAsRead(notificationId) {
+      const notificationItem = document.querySelector(`[data-notification-id="${notificationId}"]`);
+      if (notificationItem) {
+        notificationItem.remove();
+        notificationCount = Math.max(0, notificationCount - 1);
+        updateNotificationBadge();
+        updateNotificationDisplay();
+      }
+    }
+    
+    // Mark all as read
+    function markAllAsRead() {
+      const notificationItems = document.querySelectorAll('.notification-item');
+      notificationItems.forEach(item => item.remove());
+      notificationCount = 0;
+      updateNotificationBadge();
+      updateNotificationDisplay();
+    }
+    
+    // Get time ago string
+    function getTimeAgo(timestamp) {
+      const now = new Date();
+      const time = new Date(timestamp);
+      const diff = now - time;
+      
+      if (diff < 60000) {
+        return 'Vừa xong';
+      } else if (diff < 3600000) {
+        return Math.floor(diff / 60000) + ' phút trước';
+      } else if (diff < 86400000) {
+        return Math.floor(diff / 3600000) + ' giờ trước';
+      } else {
+        return time.toLocaleDateString('vi-VN') + ' ' + time.toLocaleTimeString('vi-VN', {hour: '2-digit', minute: '2-digit'});
+      }
+    }
+    
+    // Initialize notifications when DOM is ready
+    document.addEventListener('DOMContentLoaded', function() {
+      // Get elements after DOM is loaded
+      const notificationBell = document.getElementById('notification-bell');
+      const notificationDropdown = document.getElementById('notification-dropdown');
+      const markAllReadBtn = document.getElementById('mark-all-read');
+      
+      // Check if elements exist
+      if (!notificationBell || !notificationDropdown || !markAllReadBtn) {
+        return;
+      }
+      
+      // Toggle notification dropdown
+      notificationBell.addEventListener('click', (e) => {
+        e.stopPropagation();
+        
+        // Toggle dropdown visibility
+        if (notificationDropdown.style.display === 'none' || notificationDropdown.style.display === '') {
+          notificationDropdown.style.display = 'block';
+        } else {
+          notificationDropdown.style.display = 'none';
+        }
+        
+        // Update notification display when opening dropdown
+        updateNotificationDisplay();
+      });
+      
+      markAllReadBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        markAllAsRead();
+      });
+      
+      // Close notification dropdown when clicking outside
+      document.addEventListener('click', (e) => {
+        if (!notificationBell.contains(e.target) && !notificationDropdown.contains(e.target)) {
+          notificationDropdown.style.display = 'none';
+        }
+      });
+      
+      // Initialize notifications
+      initializeNotifications();
+      updateNotificationDisplay(); // Initialize display state
+    });
+  </script>
+  
+  <script>
+    // Toast Notification Functions
+    function showToast(type, title, message, duration = 5000) {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast toast-${type}`;
+      
+      const icons = {
+        success: '<i data-lucide="check" class="w-5 h-5 text-green-600"></i>',
+        error: '<i data-lucide="x" class="w-5 h-5 text-red-600"></i>',
+        warning: '<i data-lucide="alert-triangle" class="w-5 h-5 text-yellow-600"></i>',
+        info: '<i data-lucide="info" class="w-5 h-5 text-blue-600"></i>'
+      };
+      
+      toast.innerHTML = `
+        <div class="toast-icon ${type}">
+          ${icons[type]}
+        </div>
+        <div class="toast-content">
+          <div class="toast-title">${title}</div>
+          <div class="toast-message">${message}</div>
+        </div>
+        <div class="toast-close" onclick="removeToast(this.parentElement)">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </div>
+      `;
+      
+      container.appendChild(toast);
+      
+      // Initialize lucide icons
+      if (window.lucide) {
+        lucide.createIcons();
+      }
+      
+      // Auto remove after duration
+      if (duration > 0) {
+        setTimeout(() => {
+          removeToast(toast);
+        }, duration);
+      }
+      
+      return toast;
+    }
+    
+    function removeToast(toast) {
+      if (toast) {
+        toast.classList.add('hide');
+        setTimeout(() => {
+          if (toast.parentElement) {
+            toast.parentElement.removeChild(toast);
+          }
+        }, 300);
+      }
+    }
+    
+    // Loading Overlay Functions
+    function showLoading() {
+      const overlay = document.getElementById('loadingOverlay');
+      if (overlay) {
+        overlay.classList.add('show');
+      }
+    }
+    
+    function hideLoading() {
+      const overlay = document.getElementById('loadingOverlay');
+      if (overlay) {
+        overlay.classList.remove('show');
+      }
+    }
+    
+    // Intercept form submissions and fetch calls to show loading
+    document.addEventListener('DOMContentLoaded', function() {
+      // Show loading on form submissions
+      const forms = document.querySelectorAll('form');
+      forms.forEach(form => {
+        form.addEventListener('submit', function() {
+          showLoading();
+          // Hide loading after a timeout as fallback
+          setTimeout(hideLoading, 30000);
+        });
+      });
+      
+      // Show loading on page navigation
+      const links = document.querySelectorAll('a[href]');
+      links.forEach(link => {
+        link.addEventListener('click', function(e) {
+          // Only intercept if it's not a hash link
+          if (!this.getAttribute('href').startsWith('#')) {
+            showLoading();
+          }
+        });
+      });
+      
+      // Hide loading when page is fully loaded
+      window.addEventListener('load', function() {
+        hideLoading();
+      });
+    });
+    
+    // Enhanced fetch wrapper with loading
+    async function fetchWithLoading(url, options = {}) {
+      showLoading();
+      try {
+        const response = await fetch(url, options);
+        return response;
+      } finally {
+        // Small delay to ensure smooth transition
+        setTimeout(hideLoading, 500);
+      }
+    }
+    
+    // Helper function to show toast and reload with delay
+    function showToastAndReload(type, title, message, delay = 2000) {
+      showToast(type, title, message, delay + 500);
+      
+      // Delay reload to allow user to see the toast
+      setTimeout(() => {
+        location.reload();
+      }, delay);
+    }
+    
+    // Replace location.reload() calls to delay reload after toast is visible
+    const originalReload = window.location.reload.bind(window.location);
+    window.location.reload = function(forceReload) {
+      // Check if there are active toasts
+      const toastContainer = document.querySelector('.toast-container');
+      const hasActiveToasts = toastContainer && toastContainer.children.length > 0;
+      
+      if (hasActiveToasts && !forceReload) {
+        // Delay reload to allow user to see the toast
+        setTimeout(() => {
+          originalReload();
+        }, 2000); // 2 seconds time to see the toast
+      } else {
+        originalReload();
+      }
+    };
+    
+    // Replace alert with toast
+    window.originalAlert = window.alert;
+    window.alert = function(message) {
+      // Try to determine if it's a success or error message
+      const lowerMessage = message.toLowerCase();
+      let type = 'info';
+      let title = 'Thông báo';
+      
+      if (lowerMessage.includes('thành công') || lowerMessage.includes('success')) {
+        type = 'success';
+        title = 'Thành công!';
+      } else if (lowerMessage.includes('lỗi') || lowerMessage.includes('error') || lowerMessage.includes('thất bại')) {
+        type = 'error';
+        title = 'Thất bại!';
+      } else if (lowerMessage.includes('cảnh báo') || lowerMessage.includes('warning')) {
+        type = 'warning';
+        title = 'Cảnh báo!';
+      }
+      
+      showToast(type, title, message);
+    };
+    
+    // Track if alert is called with reload intent
+    window.lastAlertMessage = null;
+  </script>
+  
+  @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,315 @@
+@model _3TLMiniSoccer.Controllers.BookingConfirmationData
+
+@{
+    ViewData["Title"] = "Xác nhận đặt sân";
+}
+
+@section Styles {
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#16a34a',
+                        dark: '#0f172a',
+                        accent: '#f59e0b',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        @@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+}
+
+<section class="py-16 bg-gray-50">
+    <div class="container mx-auto px-4">
+        <div class="max-w-4xl mx-auto">
+            <!-- Error/Success Messages -->
+            @if (TempData["Error"] != null)
+            {
+                <div class="bg-red-100 border border-red-400 text-red-700 px-6 py-4 rounded-lg mb-6" role="alert">
+                    <div class="flex items-center">
+                        <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span>@TempData["Error"]</span>
+                    </div>
+                </div>
+            }
+            
+            @if (TempData["Success"] != null)
+            {
+                <div class="bg-green-100 border border-green-400 text-green-700 px-6 py-4 rounded-lg mb-6" role="alert">
+                    <div class="flex items-center">
+                        <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span>@TempData["Success"]</span>
+                    </div>
+                </div>
+            }
+            
+            <!-- Header -->
+            <div class="text-center mb-8" data-aos="fade-up">
+                <div class="inline-flex items-center justify-center w-16 h-16 bg-primary bg-opacity-10 rounded-full mb-4">
+                    <svg class="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <h1 class="text-3xl font-bold text-gray-900 mb-4">Xác nhận đặt sân</h1>
+                <p class="text-lg text-gray-600">Vui lòng kiểm tra lại thông tin trước khi thanh toán</p>
+            </div>
+
+            <div class="grid lg:grid-cols-2 gap-8">
+                <!-- Booking Details -->
+                <div class="bg-white rounded-xl shadow-lg p-6 card-hover" data-aos="fade-right">
+                    <h2 class="text-xl font-bold mb-6 text-gray-900 flex items-center">
+                        <svg class="w-6 h-6 text-primary mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                        </svg>
+                        Thông tin đặt sân
+                    </h2>
+                    
+                    <div class="space-y-4">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Sân bóng:</span>
+                            <span class="font-medium">@Model.FieldName</span>
+                        </div>
+                        
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Loại sân:</span>
+                            <span class="font-medium">@Model.FieldType</span>
+                        </div>
+                        
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Địa chỉ:</span>
+                            <span class="font-medium text-right max-w-xs">@Model.FieldLocation</span>
+                        </div>
+                        
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Ngày đặt:</span>
+                            <span class="font-medium">@Model.BookingDate.ToString("dd/MM/yyyy")</span>
+                        </div>
+                        
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Khung giờ:</span>
+                            <span class="font-medium">@Model.StartTime.ToString(@"hh\:mm") - @Model.EndTime.ToString(@"hh\:mm")</span>
+                        </div>
+                        
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Số giờ:</span>
+                            <span class="font-medium">@Model.Duration phút (@((Model.Duration / 60.0).ToString("F1")) giờ)</span>
+                        </div>
+                        
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Giá cơ bản:</span>
+                            <span class="font-medium">@(Model.BasePrice?.ToString("N0") ?? "0") VND/giờ</span>
+                        </div>
+                        
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Tạm tính (@Model.Duration phút):</span>
+                            <span class="font-medium">@(((Model.BasePrice ?? 0) * (Model.Duration / 60.0m)).ToString("N0")) VND</span>
+                        </div>
+                        
+                        @if (!string.IsNullOrEmpty(Model.VoucherCode) && Model.VoucherDiscount > 0)
+                        {
+                            <div class="flex justify-between text-green-600">
+                                <span>Giảm giá (@Model.VoucherCode):</span>
+                                <span class="font-medium">-@Model.VoucherDiscount.ToString("N0") VND</span>
+                            </div>
+                        }
+                        
+                        <hr class="my-4">
+                        
+                        <div class="flex justify-between text-lg font-bold text-green-600">
+                            <span>Tổng cộng:</span>
+                            <span>@Model.TotalPrice.ToString("N0") VND</span>
+                        </div>
+                        
+                        @if (!string.IsNullOrEmpty(Model.Notes))
+                        {
+                            <div class="mt-4">
+                                <span class="text-gray-600">Ghi chú:</span>
+                                <p class="text-gray-900 mt-1">@Model.Notes</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Payment Methods -->
+                <div class="bg-white rounded-xl shadow-lg p-6 card-hover" data-aos="fade-left">
+                    <h2 class="text-xl font-bold mb-6 text-gray-900 flex items-center">
+                        <svg class="w-6 h-6 text-primary mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                        </svg>
+                        Phương thức thanh toán
+                    </h2>
+                    
+                    <form asp-controller="Field" asp-action="ProcessPayment" method="post">
+                        <div class="space-y-4">
+                            <!-- Bank Transfer Option -->
+                            <div class="border border-gray-200 rounded-lg p-4 hover:border-primary transition-colors cursor-pointer" onclick="selectPaymentMethod('bank_transfer')">
+                                <div class="flex items-center">
+                                    <input type="radio" name="paymentMethod" value="bank_transfer" id="bank_transfer" class="mr-3">
+                                    <div class="flex-1">
+                                        <label for="bank_transfer" class="cursor-pointer">
+                                            <div class="flex items-center">
+                                                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+                                                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                                                    </svg>
+                                                </div>
+                                                <div>
+                                                    <h3 class="font-medium text-gray-900">Chuyển khoản ngân hàng</h3>
+                                                    <p class="text-sm text-gray-600">Thanh toán qua QR Code</p>
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Cash Option -->
+                            <div class="border border-gray-200 rounded-lg p-4 hover:border-primary transition-colors cursor-pointer" onclick="selectPaymentMethod('cash')">
+                                <div class="flex items-center">
+                                    <input type="radio" name="paymentMethod" value="cash" id="cash" class="mr-3">
+                                    <div class="flex-1">
+                                        <label for="cash" class="cursor-pointer">
+                                            <div class="flex items-center">
+                                                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4">
+                                                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                                                    </svg>
+                                                </div>
+                                                <div>
+                                                    <h3 class="font-medium text-gray-900">Thanh toán tiền mặt</h3>
+                                                    <p class="text-sm text-gray-600">Thanh toán khi đến sân</p>
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="mt-8 flex flex-col sm:flex-row gap-4">
+                            <button type="submit" class="flex-1 bg-primary text-white py-3 px-6 rounded-lg font-medium hover:bg-primary-dark transition-colors">
+                                Tiếp tục thanh toán
+                            </button>
+                            <a href="@Url.Action("Details", "Field", new { id = Model.FieldId })" class="flex-1 bg-gray-200 text-gray-800 py-3 px-6 rounded-lg font-medium hover:bg-gray-300 transition-colors text-center">
+                                Quay lại
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Important Notes -->
+            <div class="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6" data-aos="fade-up" data-aos-delay="200">
+                <h3 class="font-medium text-blue-900 mb-3 flex items-center">
+                    <svg class="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Lưu ý quan trọng:
+                </h3>
+                <ul class="text-sm text-blue-800 space-y-2">
+                    <li class="flex items-start">
+                        <span class="text-blue-600 mr-2">•</span>
+                        <span><strong>Chuyển khoản:</strong> Thanh toán ngay qua QR Code, đặt sân sẽ được gửi đến admin để duyệt</span>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="text-blue-600 mr-2">•</span>
+                        <span><strong>Tiền mặt:</strong> Thanh toán khi đến sân, đặt sân sẽ được gửi đến admin để duyệt</span>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="text-blue-600 mr-2">•</span>
+                        <span>Vui lòng đến đúng giờ đã đặt</span>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="text-blue-600 mr-2">•</span>
+                        <span>Liên hệ hotline nếu có thay đổi</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        // Wait for DOM to be ready
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize AOS animation
+            AOS.init({
+                duration: 800,
+                easing: 'ease-in-out',
+                once: true
+            });
+        });
+
+        function selectPaymentMethod(method) {
+            // Remove selection from all radio buttons
+            document.querySelectorAll('input[name="paymentMethod"]').forEach(radio => {
+                radio.checked = false;
+            });
+            
+            // Select the clicked method
+            const methodInput = document.getElementById(method);
+            if (methodInput) {
+                methodInput.checked = true;
+            }
+            
+            // Update visual selection
+            document.querySelectorAll('.border-gray-200').forEach(div => {
+                div.classList.remove('border-primary', 'bg-primary-50');
+                div.classList.add('border-gray-200');
+            });
+            
+            // Highlight selected option
+            const selectedInput = document.querySelector(`input[value="${method}"]`);
+            if (selectedInput) {
+                const selectedDiv = selectedInput.closest('.border-gray-200');
+                if (selectedDiv) {
+                    selectedDiv.classList.remove('border-gray-200');
+                    selectedDiv.classList.add('border-primary', 'bg-primary-50');
+                }
+            }
+        }
+
+        // Form validation
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const selectedMethod = document.querySelector('input[name="paymentMethod"]:checked');
+            if (!selectedMethod) {
+                e.preventDefault();
+                alert('Vui lòng chọn phương thức thanh toán');
+                return false;
+            }
+            
+            console.log('✅ Payment method selected:', selectedMethod.value);
+            console.log('📤 Submitting to:', this.action);
+            
+            // Show loading state
+            const submitBtn = this.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Đang xử lý...';
+        });
+    </script>
+}

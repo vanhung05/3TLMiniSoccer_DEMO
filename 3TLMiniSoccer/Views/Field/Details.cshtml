@@ -1,0 +1,1240 @@
+@model _3TLMiniSoccer.ViewModels.FieldDetailsViewModel
+@{
+    ViewData["Title"] = $"Chi tiết sân {Model.Field.FieldName} - 3TL Mini Soccer";
+}
+
+@section Styles {
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#16a34a',
+                        dark: '#0f172a',
+                        accent: '#f59e0b',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        @@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        .hero-gradient {
+            background: linear-gradient(135deg, rgba(22, 163, 74, 0.9) 0%, rgba(15, 23, 42, 0.9) 100%);
+        }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .placeholder-img {
+            background: linear-gradient(45deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%);
+            background-size: 200% 200%;
+            animation: shimmer 2s infinite linear;
+        }
+        
+        @@keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        
+        /* Custom flatpickr styles */
+        .flatpickr-calendar {
+            border-radius: 12px !important;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+            border: 1px solid #e5e7eb !important;
+        }
+        
+        .flatpickr-day {
+            border-radius: 8px !important;
+            margin: 2px !important;
+        }
+        
+        .flatpickr-day:hover {
+            background: #3b82f6 !important;
+            color: white !important;
+        }
+        
+        .flatpickr-day.selected {
+            background: #1d4ed8 !important;
+            color: white !important;
+        }
+        
+        .flatpickr-day.today {
+            border: 2px solid #3b82f6 !important;
+        }
+        
+        .flatpickr-day.disabled {
+            color: #9ca3af !important;
+            background: #f3f4f6 !important;
+        }
+        
+        .flatpickr-months {
+            background: #f8fafc !important;
+            border-radius: 12px 12px 0 0 !important;
+        }
+        
+        .flatpickr-current-month {
+            font-weight: 600 !important;
+        }
+        
+        .flatpickr-prev-month:hover svg,
+        .flatpickr-next-month:hover svg {
+            fill: #3b82f6 !important;
+        }
+        
+        .slot-badge {
+            transition: all 0.2s;
+        }
+        
+        .slot-badge:hover {
+            transform: translateY(-2px);
+        }
+        
+        .slot-badge.selected {
+            background-color: #16a34a;
+            color: white;
+        }
+    </style>
+}
+
+<!-- Hero Section -->
+<section class="relative hero-gradient text-white">
+    <div class="absolute inset-0 bg-black opacity-20"></div>
+    <div class="container mx-auto px-4 py-24 md:py-32 relative z-10">
+        <div class="max-w-4xl mx-auto text-center">
+            <h1 class="text-4xl md:text-5xl font-bold mb-6" data-aos="fade-up">@Model.Field.FieldName</h1>
+            <p class="text-lg md:text-xl mb-8" data-aos="fade-up" data-aos-delay="100">@Model.Field.FieldType.TypeName - @Model.Field.FieldType.BasePrice.ToString("N0") VND/giờ</p>
+            <div class="flex flex-wrap justify-center gap-4" data-aos="fade-up" data-aos-delay="200">
+                <a href="#booking" class="bg-accent hover:bg-yellow-600 text-white font-bold py-3 px-6 rounded-full transition">Đặt sân ngay</a>
+                <a href="@Url.Action("Index", "Field")" class="bg-white hover:bg-gray-100 text-primary font-bold py-3 px-6 rounded-full transition">Quay lại</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Field Details -->
+<section class="py-16 bg-white">
+    <div class="container mx-auto px-4">
+        <div class="grid lg:grid-cols-3 gap-8">
+            <!-- Field Info -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden mb-8" data-aos="fade-up">
+                    @if (!string.IsNullOrEmpty(Model.Field.ImageUrl))
+                    {
+                        <img src="/images/san/@Model.Field.ImageUrl" alt="@Model.Field.FieldName" class="w-full h-64 md:h-96 object-cover">
+                    }
+                    else
+                    {
+                        <div class="h-64 md:h-96 placeholder-img flex items-center justify-center">
+                            <div class="text-center text-gray-500">
+                                <svg class="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                                <p class="text-lg font-medium">Chưa có ảnh sân</p>
+                                <p class="text-sm">Hình ảnh sẽ được cập nhật sớm</p>
+                            </div>
+                        </div>
+                    }
+                    <div class="p-6">
+                        <h2 class="text-2xl font-bold mb-4">Thông tin sân</h2>
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <div>
+                                <h3 class="font-semibold text-gray-700 mb-2">Loại sân</h3>
+                                <p class="text-gray-600">@Model.Field.FieldType.TypeName</p>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-gray-700 mb-2">Giá cơ bản</h3>
+                                <p class="text-gray-600">@Model.Field.FieldType.BasePrice.ToString("N0") VND/giờ</p>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-gray-700 mb-2">Địa chỉ</h3>
+                                <p class="text-gray-600">@Model.Field.Location</p>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-gray-700 mb-2">Trạng thái</h3>
+                                @{
+                                    var statusText = Model.Field.Status?.ToLower() switch
+                                    {
+                                        "active" => "Hoạt động",
+                                        "maintenance" => "Bảo trì",
+                                        "inactive" => "Không hoạt động",
+                                        "closed" => "Đóng cửa",
+                                        _ => Model.Field.Status ?? "Không xác định"
+                                    };
+                                    
+                                    var statusClass = Model.Field.Status?.ToLower() switch
+                                    {
+                                        "active" => "bg-green-100 text-green-800",
+                                        "maintenance" => "bg-red-100 text-red-800",
+                                        "inactive" => "bg-gray-100 text-gray-800",
+                                        "closed" => "bg-yellow-100 text-yellow-800",
+                                        _ => "bg-gray-100 text-gray-800"
+                                    };
+                                }
+                                <span class="inline-block @statusClass text-xs font-medium px-2.5 py-0.5 rounded">@statusText</span>
+                            </div>
+                        </div>
+                        @if (!string.IsNullOrEmpty(Model.Field.Description))
+                        {
+                            <div class="mt-6">
+                                <h3 class="font-semibold text-gray-700 mb-2">Mô tả</h3>
+                                <p class="text-gray-600">@Model.Field.Description</p>
+                            </div>
+                        }
+                        
+                        <!-- Booked Time Slots - Only show if field is not under maintenance -->
+                        @if (Model.Field.Status?.ToLower() != "maintenance")
+                        {
+                            <div class="mt-6" id="bookedTimeSlotsSection">
+                                <h3 class="font-semibold text-gray-700 mb-3" id="bookedTimeSlotsTitle">Khung giờ đã được đặt hôm nay</h3>
+                                <div id="bookedTimeSlotsContent">
+                                    @if (Model.BookedTimeSlots != null && Model.BookedTimeSlots.Any())
+                                    {
+                                        <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+                                            @foreach (var booking in Model.BookedTimeSlots)
+                                            {
+                                                <div class="bg-red-50 border border-red-200 rounded-lg p-3 text-center">
+                                                    <div class="text-sm font-medium text-red-800">
+                                                        @booking.StartTime.ToString(@"hh\:mm") - @booking.EndTime.ToString(@"hh\:mm")
+                                                    </div>
+                                                    <div class="text-xs text-red-600 mt-1">
+                                                        @booking.User.FirstName @booking.User.LastName
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
+                                            <p class="text-green-800 font-medium">Chưa có khung giờ nào được đặt</p>
+                                            <p class="text-green-600 text-sm mt-1">Tất cả khung giờ đều có sẵn!</p>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Features -->
+                <div class="bg-white rounded-xl shadow-lg p-6 mb-8" data-aos="fade-up" data-aos-delay="100">
+                    <h2 class="text-2xl font-bold mb-6">Tiện ích</h2>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-primary bg-opacity-10 rounded-full flex items-center justify-center mr-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 2v4"></path>
+                                    <path d="m16.2 7.8 2.9-2.9"></path>
+                                    <path d="M18 12h4"></path>
+                                    <path d="m16.2 16.2 2.9 2.9"></path>
+                                    <path d="M12 18v4"></path>
+                                    <path d="m4.9 19.1 2.9-2.9"></path>
+                                    <path d="M2 12h4"></path>
+                                    <path d="m4.9 4.9 2.9 2.9"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold">Mặt cỏ đạt chuẩn</h3>
+                                <p class="text-gray-600 text-sm">Cỏ nhân tạo chất lượng cao</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-primary bg-opacity-10 rounded-full flex items-center justify-center mr-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <polyline points="12 6 12 12 16 14"></polyline>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold">Đèn LED ban đêm</h3>
+                                <p class="text-gray-600 text-sm">Hệ thống chiếu sáng hiện đại</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-primary bg-opacity-10 rounded-full flex items-center justify-center mr-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold">Phòng thay đồ</h3>
+                                <p class="text-gray-600 text-sm">Tiện nghi đầy đủ</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-primary bg-opacity-10 rounded-full flex items-center justify-center mr-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="1" y="3" width="15" height="13"></rect>
+                                    <path d="M16 8h.01"></path>
+                                    <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold">Chỗ đậu xe</h3>
+                                <p class="text-gray-600 text-sm">Bãi giữ xe rộng rãi</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Booking Form -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-xl shadow-lg p-6 sticky top-4" data-aos="fade-up" data-aos-delay="200" id="booking">
+                    <h2 class="text-2xl font-bold mb-6">Đặt sân</h2>
+                    
+                    @* Display error/success messages *@
+                    @if (TempData["Error"] != null)
+                    {
+                        <div class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                            <p class="text-red-800 text-sm">@TempData["Error"]</p>
+                        </div>
+                    }
+                    @if (TempData["Success"] != null)
+                    {
+                        <div class="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                            <p class="text-green-800 text-sm">@TempData["Success"]</p>
+                        </div>
+                    }
+                    
+                    @* Check if field is under maintenance *@
+                    @if (Model.Field.Status?.ToLower() == "maintenance")
+                    {
+                        <div class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                </svg>
+                                <div>
+                                    <h3 class="text-red-800 font-semibold">Sân đang bảo trì</h3>
+                                    <p class="text-red-700 text-sm">Sân này hiện đang trong quá trình bảo trì và không thể đặt sân. Vui lòng chọn sân khác.</p>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    
+                    @if (Model.Field.Status?.ToLower() != "maintenance")
+                    {
+                    <form asp-controller="Field" asp-action="Book" method="post" id="bookingForm">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="FieldId" value="@Model.Field.FieldId" />
+                        <input type="hidden" name="TotalPrice" id="totalPrice" value="@Model.Field.FieldType.BasePrice" />
+                        
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Ngày đặt</label>
+            <input type="text" name="BookingDate" id="bookingDate" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring-primary datepicker" placeholder="Chọn ngày" readonly required>
+          </div>
+                        
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Thời gian bắt đầu</label>
+                            <input type="time" name="StartTime" id="startTime" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring-primary" 
+                                   min="@Model.Field.OpeningTime.ToString(@"hh\:mm")" 
+                                   max="@Model.Field.ClosingTime.ToString(@"hh\:mm")" 
+                                   required>
+                            <div class="text-xs text-gray-500 mt-1">Giờ mở sân: @Model.Field.OpeningTime.ToString(@"hh\:mm") - Giờ đóng sân: @Model.Field.ClosingTime.ToString(@"hh\:mm")</div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Thời gian kết thúc</label>
+                            <input type="time" name="EndTime" id="endTime" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring-primary" 
+                                   min="@Model.Field.OpeningTime.ToString(@"hh\:mm")" 
+                                   max="@Model.Field.ClosingTime.ToString(@"hh\:mm")" 
+                                   required>
+                            <div class="text-xs text-gray-500 mt-1">Tự động tính dựa trên thời gian bắt đầu</div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Thời gian thuê</label>
+                            <select name="Duration" id="durationSelect" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring-primary" required>
+                                <option value="60">60 phút (1 giờ)</option>
+                                <option value="90">90 phút (1.5 giờ)</option>
+                                <option value="120" selected>120 phút (2 giờ)</option>
+                                <option value="180">180 phút (3 giờ)</option>
+                                <option value="240">240 phút (4 giờ)</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Availability Check -->
+                        <div class="mb-4">
+                            <button type="button" id="checkAvailabilityBtn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg transition">
+                                <i class="fas fa-search"></i> Kiểm tra khả dụng
+                            </button>
+                            <div id="availabilityStatus" class="mt-2 text-sm"></div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Mã giảm giá (tùy chọn)</label>
+                            <div class="flex gap-2">
+                                <input type="text" id="voucherCode" name="VoucherCode" class="flex-1 rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring-primary" placeholder="Nhập mã giảm giá">
+                                <button type="button" id="applyVoucherBtn" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors">
+                                    Áp dụng
+                                </button>
+                            </div>
+                            <input type="hidden" id="voucherDiscount" name="VoucherDiscount" value="0" />
+                            <div id="voucherMessage" class="mt-2 text-sm hidden"></div>
+                        </div>
+                        
+                        <!-- Time Range Display -->
+                        <div class="mb-4" id="timeRangeDisplay" style="display: none;">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Thời gian đặt</label>
+                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 text-center">
+                                <span id="timeRangeText" class="text-blue-800 font-medium"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Ghi chú (tùy chọn)</label>
+                            <textarea name="Notes" rows="3" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring-primary" placeholder="Yêu cầu thêm..."></textarea>
+                        </div>
+                        
+                        <div class="bg-gray-50 p-4 rounded-lg mb-6">
+                            <div class="flex justify-between mb-2">
+                                <span class="text-gray-600">Giá sân (1 giờ)</span>
+                                <span class="font-medium" id="basePrice">@Model.Field.FieldType.BasePrice.ToString("N0") VND</span>
+                            </div>
+                            <div class="flex justify-between mb-2">
+                                <span class="text-gray-600">Thời gian</span>
+                                <span class="font-medium" id="durationDisplay">0 phút</span>
+                            </div>
+                            <div class="flex justify-between mb-2">
+                                <span class="text-gray-600">Phí dịch vụ</span>
+                                <span class="font-medium">0 VND</span>
+                            </div>
+                            <div class="flex justify-between mb-2">
+                                <span class="text-gray-600">Tạm tính</span>
+                                <span class="font-medium" id="subtotalDisplay">0 VND</span>
+                            </div>
+                            <div class="flex justify-between mb-2 text-green-600" id="discountRow" style="display: none;">
+                                <span>Giảm giá</span>
+                                <span class="font-medium" id="discountDisplay">0 VND</span>
+                            </div>
+                            <div class="flex justify-between font-bold text-lg text-primary">
+                                <span>Tổng cộng</span>
+                                <span id="totalPriceDisplay">0 VND</span>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" id="submitBtn" class="w-full bg-primary hover:bg-green-700 text-white font-medium py-3 px-4 rounded-lg transition">
+                            Đặt sân ngay
+                        </button>
+                    </form>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Recent Bookings -->
+@if (Model.RecentBookings.Any())
+{
+    <section class="py-16 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold mb-4" data-aos="fade-up">Đặt sân gần đây</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto" data-aos="fade-up" data-aos-delay="100">Những lượt đặt sân mới nhất tại @Model.Field.FieldName</p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                @foreach (var booking in Model.RecentBookings)
+                {
+                    <div class="bg-white rounded-xl shadow-md p-6" data-aos="fade-up" data-aos-delay="100">
+                        <div class="flex justify-between items-start mb-4">
+                            <h3 class="text-lg font-bold">Đặt sân #@booking.BookingId.ToString("D3")</h3>
+                            <span class="bg-green-100 text-green-800 text-xs font-medium px-2 py-0.5 rounded">@booking.Status</span>
+                        </div>
+                        <div class="space-y-2 text-sm text-gray-600">
+                            <p><strong>Ngày:</strong> @booking.BookingDate.ToString("dd/MM/yyyy")</p>
+                            <p><strong>Giờ:</strong> 
+                                @{
+                                    string startTimeFormatted = "N/A";
+                                    string endTimeFormatted = "N/A";
+                                    try { 
+                                        if (booking.StartTime != null && booking.StartTime != TimeSpan.Zero) {
+                                            startTimeFormatted = booking.StartTime.ToString(@"hh\:mm");
+                                        }
+                                    } catch { startTimeFormatted = "N/A"; }
+                                    try { 
+                                        if (booking.EndTime != null && booking.EndTime != TimeSpan.Zero) {
+                                            endTimeFormatted = booking.EndTime.ToString(@"hh\:mm");
+                                        }
+                                    } catch { endTimeFormatted = "N/A"; }
+                                    <text>@startTimeFormatted - @endTimeFormatted</text>
+                                }
+                            </p>
+                            <p><strong>Giá:</strong> @booking.TotalPrice.ToString("N0") VND</p>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+}
+
+@section Scripts {
+    <script>
+        // Initialize AOS animation
+        AOS.init({
+            duration: 800,
+            easing: 'ease-in-out',
+            once: true
+        });
+        
+        // Initialize Datepicker
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set current time as default for start time
+            const now = new Date();
+            const currentTime = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+            const startTimeInput = document.getElementById('startTime');
+            const endTimeInput = document.getElementById('endTime');
+            const durationSelect = document.getElementById('durationSelect');
+            
+            // Set current time as default start time
+            startTimeInput.value = currentTime;
+            
+            // Get today's date string
+            const today = new Date();
+            const todayStr = today.getFullYear() + '-' + 
+                           String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+                           String(today.getDate()).padStart(2, '0');
+            
+            // Initialize flatpickr with better configuration
+            flatpickr(".datepicker", {
+                dateFormat: "Y-m-d",
+                minDate: "today",
+                allowInput: false,
+                clickOpens: true,
+                placeholder: "Chọn ngày",
+                onChange: function(selectedDates, dateStr, instance) {
+                    // Load available time slots for the selected date
+                    if (dateStr) {
+                        loadAvailableTimesForDate(dateStr);
+                        loadBookedTimeSlotsForDate(dateStr);
+                    }
+                },
+                onReady: function(selectedDates, dateStr, instance) {
+                    // Set default date to today when calendar opens
+                    if (!dateStr) {
+                        instance.setDate(todayStr, false);
+                    }
+                }
+            });
+            
+            // Load booked slots for today initially
+            loadBookedTimeSlotsForDate(todayStr);
+            
+            // Function to load booked time slots for a specific date
+            async function loadBookedTimeSlotsForDate(dateStr) {
+                const fieldId = @Model.Field.FieldId;
+                
+                try {
+                    // Call API to get booked time slots for the selected date
+                    const response = await fetch(`/Field/GetBookedTimeSlots?fieldId=${fieldId}&date=${dateStr}`);
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        updateBookedTimeSlotsDisplay(result.data, dateStr);
+                    } else {
+                        console.error('Error loading booked time slots:', result.message);
+                        updateBookedTimeSlotsDisplay([], dateStr);
+                    }
+                    
+                } catch (error) {
+                    console.error('Error loading booked time slots:', error);
+                    updateBookedTimeSlotsDisplay([], dateStr);
+                }
+            }
+            
+            // Function to load available times for a specific date
+            async function loadAvailableTimesForDate(dateStr) {
+                const fieldId = @Model.Field.FieldId;
+                const duration = parseInt(document.getElementById('durationSelect').value) || 120;
+                
+                try {
+                    // Call API to get available times
+                    const response = await fetch(`/Field/GetAvailableTimes?fieldId=${fieldId}&bookingDate=${dateStr}&duration=${duration}`);
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        updateAvailableTimesDisplay(result.startTimes, result.endTimes);
+                    } else {
+                        showAvailabilityStatus('error', 'Không thể tải thông tin khả dụng');
+                    }
+                    
+                } catch (error) {
+                    console.error('Error loading available times:', error);
+                    showAvailabilityStatus('error', 'Lỗi tải thông tin khả dụng');
+                }
+            }
+            
+            // Function to update booked time slots display
+            function updateBookedTimeSlotsDisplay(bookedSlots, dateStr) {
+                const bookedTimeSlotsTitle = document.getElementById('bookedTimeSlotsTitle');
+                const bookedTimeSlotsContent = document.getElementById('bookedTimeSlotsContent');
+                
+                // Update title based on selected date
+                if (!dateStr) {
+                    const todayFormatted = new Date().toLocaleDateString('vi-VN');
+                    bookedTimeSlotsTitle.textContent = `Khung giờ đã được đặt ngày ${todayFormatted}`;
+                    return;
+                }
+                
+                const selectedDateObj = new Date(dateStr);
+                const dateStrFormatted = selectedDateObj.toLocaleDateString('vi-VN');
+                bookedTimeSlotsTitle.textContent = `Khung giờ đã được đặt ngày ${dateStrFormatted}`;
+                
+                // Update content
+                if (bookedSlots && bookedSlots.length > 0) {
+                    bookedTimeSlotsContent.innerHTML = `
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+                            ${bookedSlots.map(slot => `
+                                <div class="bg-red-50 border border-red-200 rounded-lg p-3 text-center">
+                                    <div class="text-sm font-medium text-red-800">
+                                        ${slot.startTime} - ${slot.endTime}
+                                    </div>
+                                    <div class="text-xs text-red-600 mt-1">
+                                        ${slot.userName || 'Đã đặt'}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                } else {
+                    bookedTimeSlotsContent.innerHTML = `
+                        <div class="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
+                            <p class="text-green-800 font-medium">Chưa có khung giờ nào được đặt</p>
+                            <p class="text-green-600 text-sm mt-1">Tất cả khung giờ đều có sẵn!</p>
+                        </div>
+                    `;
+                }
+            }
+            
+            // Function to update available times display
+            function updateAvailableTimesDisplay(startTimes, endTimes) {
+                const bookedTimeSlotsContent = document.getElementById('bookedTimeSlotsContent');
+                
+                if (startTimes && startTimes.length > 0) {
+                    bookedTimeSlotsContent.innerHTML = `
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <h4 class="font-medium text-blue-800 mb-2">Thời gian có sẵn:</h4>
+                            <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+                                ${startTimes.map((startTime, index) => `
+                                    <div class="bg-green-50 border border-green-200 rounded-lg p-2 text-center">
+                                        <div class="text-sm font-medium text-green-800">
+                                            ${startTime} - ${endTimes[index]}
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    bookedTimeSlotsContent.innerHTML = `
+                        <div class="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
+                            <p class="text-red-800 font-medium">Không có thời gian khả dụng</p>
+                            <p class="text-red-600 text-sm mt-1">Vui lòng chọn ngày khác</p>
+                        </div>
+                    `;
+                }
+            }
+            
+            // Function to update booked time slots display
+            function updateBookedTimeSlots(timeSlots, dateStr) {
+                const bookedTimeSlotsTitle = document.getElementById('bookedTimeSlotsTitle');
+                const bookedTimeSlotsContent = document.getElementById('bookedTimeSlotsContent');
+                
+                if (!dateStr) {
+                    bookedTimeSlotsTitle.textContent = 'Khung giờ đã được đặt hôm nay';
+                    return;
+                }
+                
+                const selectedDateObj = new Date(dateStr);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                selectedDateObj.setHours(0, 0, 0, 0);
+                
+                if (selectedDateObj.getTime() === today.getTime()) {
+                    bookedTimeSlotsTitle.textContent = 'Khung giờ đã được đặt hôm nay';
+                } else {
+                    const dateStrFormatted = selectedDateObj.toLocaleDateString('vi-VN');
+                    bookedTimeSlotsTitle.textContent = `Khung giờ đã được đặt ngày ${dateStrFormatted}`;
+                }
+                
+                if (timeSlots && timeSlots.length > 0) {
+                    const bookedSlots = timeSlots.filter(slot => slot.isBooked);
+                    if (bookedSlots.length > 0) {
+                        bookedTimeSlotsContent.innerHTML = `
+                            <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+                                ${bookedSlots.map(slot => `
+                                    <div class="bg-red-50 border border-red-200 rounded-lg p-3 text-center">
+                                        <div class="text-sm font-medium text-red-800">
+                                            ${slot.startTime} - ${slot.endTime}
+                                        </div>
+                                        <div class="text-xs text-red-600 mt-1">
+                                            ${slot.bookedBy || 'Đã đặt'}
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        `;
+                    } else {
+                        bookedTimeSlotsContent.innerHTML = `
+                            <div class="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
+                                <p class="text-green-800 font-medium">Chưa có khung giờ nào được đặt</p>
+                                <p class="text-green-600 text-sm mt-1">Tất cả khung giờ đều có sẵn!</p>
+                            </div>
+                        `;
+                    }
+                } else {
+                    bookedTimeSlotsContent.innerHTML = `
+                        <div class="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
+                            <p class="text-green-800 font-medium">Chưa có khung giờ nào được đặt</p>
+                            <p class="text-green-600 text-sm mt-1">Tất cả khung giờ đều có sẵn!</p>
+                        </div>
+                    `;
+                }
+            }
+            
+            // Calculate total price and time range
+            const basePrice = @Model.Field.FieldType.BasePrice;
+            const totalPriceElement = document.getElementById('totalPrice');
+            const timeRangeDisplay = document.getElementById('timeRangeDisplay');
+            const timeRangeText = document.getElementById('timeRangeText');
+            
+            // Validate time inputs
+            function validateTimeInputs() {
+                const startTime = startTimeInput.value;
+                const endTime = endTimeInput.value;
+                const fieldOpeningTime = '@Model.Field.OpeningTime.ToString(@"hh\:mm")';
+                const fieldClosingTime = '@Model.Field.ClosingTime.ToString(@"hh\:mm")';
+                
+                // Check if start time is within field operating hours
+                if (startTime && (startTime < fieldOpeningTime || startTime > fieldClosingTime)) {
+                    showTimeValidationError('Thời gian bắt đầu phải trong khung giờ hoạt động của sân');
+                    return false;
+                }
+                
+                // Check if end time is within field operating hours
+                if (endTime && (endTime < fieldOpeningTime || endTime > fieldClosingTime)) {
+                    showTimeValidationError('Thời gian kết thúc phải trong khung giờ hoạt động của sân');
+                    return false;
+                }
+                
+                // Check if end time is after start time
+                if (startTime && endTime && startTime >= endTime) {
+                    showTimeValidationError('Thời gian kết thúc phải sau thời gian bắt đầu');
+                    return false;
+                }
+                
+                // Check if current time is not in the past (for today's booking)
+                const selectedDate = document.getElementById('bookingDate').value;
+                
+                if (selectedDate === todayStr && startTime) {
+                    const currentTime = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+                    if (startTime < currentTime) {
+                        showTimeValidationError('Không thể đặt sân trong quá khứ');
+                        return false;
+                    }
+                }
+                
+                return true;
+            }
+            
+            function showTimeValidationError(message) {
+                const statusDiv = document.getElementById('availabilityStatus');
+                statusDiv.className = 'mt-2 text-sm text-red-600';
+                statusDiv.textContent = message;
+            }
+            
+            // Auto-calculate end time when start time or duration changes
+            function calculateEndTime() {
+                const startTime = startTimeInput.value;
+                const duration = parseInt(durationSelect.value) || 0;
+                
+                if (startTime && duration > 0) {
+                    const [startHour, startMinute] = startTime.split(':').map(Number);
+                    const totalMinutes = startHour * 60 + startMinute + duration;
+                    let endHour = Math.floor(totalMinutes / 60);
+                    const endMinute = totalMinutes % 60;
+                    
+                    // Ensure end time is within valid range (00:00 - 23:59)
+                    if (endHour >= 24) {
+                        endHour = 23;
+                        // If it goes beyond 23:59, set to 23:59
+                        const endTime = '23:59';
+                        endTimeInput.value = endTime;
+                    } else {
+                        const endTime = endHour.toString().padStart(2, '0') + ':' + endMinute.toString().padStart(2, '0');
+                        endTimeInput.value = endTime;
+                    }
+                    
+                    updateTimeRangeDisplay();
+                    
+                    // Update duration display in summary
+                    document.getElementById('durationDisplay').textContent = duration + ' phút';
+                    
+                    console.log('End time calculated:', endTimeInput.value, 'for duration:', duration, 'minutes');
+                    
+                    // Validate the calculated end time
+                    if (validateTimeInputs()) {
+                        console.log('Time validation passed, recalculating price');
+                    }
+                }
+            }
+            
+            // Auto-calculate duration when start time and end time are both set
+            function calculateDurationFromTimes() {
+                const startTime = startTimeInput.value;
+                const endTime = endTimeInput.value;
+                
+                if (startTime && endTime) {
+                    const [startHour, startMinute] = startTime.split(':').map(Number);
+                    const [endHour, endMinute] = endTime.split(':').map(Number);
+                    
+                    const startTotalMinutes = startHour * 60 + startMinute;
+                    const endTotalMinutes = endHour * 60 + endMinute;
+                    const duration = endTotalMinutes - startTotalMinutes;
+                    
+                    if (duration > 0) {
+                        // Validate time inputs first
+                        if (!validateTimeInputs()) {
+                            return;
+                        }
+                        
+                        // Update dropdown to match calculated duration
+                        // Find the closest available option
+                        const options = Array.from(durationSelect.options);
+                        const exactMatch = options.find(opt => parseInt(opt.value) === duration);
+                        
+                        if (exactMatch) {
+                            durationSelect.value = exactMatch.value;
+                            console.log('Exact duration match found:', exactMatch.value);
+                        } else {
+                            // Find closest option
+                            const closestOption = options.reduce((prev, curr) => {
+                                return Math.abs(parseInt(curr.value) - duration) < Math.abs(parseInt(prev.value) - duration) ? curr : prev;
+                            });
+                            
+                            if (closestOption) {
+                                durationSelect.value = closestOption.value;
+                                console.log('Closest duration match:', closestOption.value, 'for calculated duration:', duration);
+                            }
+                        }
+                        
+                        // Update duration display in summary
+                        document.getElementById('durationDisplay').textContent = duration + ' phút';
+                        
+                        updateTimeRangeDisplay();
+                        
+                        console.log('Duration calculated from times:', duration, 'minutes');
+                    } else {
+                        showTimeValidationError('Thời gian kết thúc phải sau thời gian bắt đầu');
+                    }
+                }
+            }
+            
+            function updateTimeRangeDisplay() {
+                const startTime = startTimeInput.value;
+                const endTime = endTimeInput.value;
+                
+                if (startTime && endTime) {
+                    timeRangeText.textContent = `${startTime} - ${endTime}`;
+                    timeRangeDisplay.style.display = 'block';
+                    
+                    console.log('Time range updated:', `${startTime} - ${endTime}`);
+                } else {
+                    timeRangeDisplay.style.display = 'none';
+                }
+            }
+            
+            // Check availability function
+            async function checkAvailability() {
+                const fieldId = @Model.Field.FieldId;
+                const bookingDate = document.getElementById('bookingDate').value;
+                const startTime = startTimeInput.value;
+                const endTime = endTimeInput.value;
+                
+                if (!bookingDate || !startTime || !endTime) {
+                    showAvailabilityStatus('error', 'Vui lòng chọn đầy đủ ngày và thời gian');
+                    return;
+                }
+                
+                try {
+                    console.log('Checking availability:', { fieldId, bookingDate, startTime, endTime });
+                    
+                    const response = await fetch('/Field/CheckAvailability', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: `fieldId=${fieldId}&bookingDate=${bookingDate}&startTime=${startTime}&endTime=${endTime}`
+                    });
+                    
+                    const result = await response.json();
+                    console.log('CheckAvailability result:', result);
+                    
+                    // Kiểm tra rõ ràng giá trị boolean
+                    if (result.isAvailable === true) {
+                        const successMessage = result.message || 'Sân còn trống, bạn có thể đặt!';
+                        showAvailabilityStatus('success', successMessage);
+                        document.getElementById('submitBtn').disabled = false;
+                    } else {
+                        const errorMessage = result.message || 'Thời gian này đã có người đặt';
+                        showAvailabilityStatus('error', errorMessage);
+                        document.getElementById('submitBtn').disabled = true;
+                    }
+                    
+                } catch (error) {
+                    console.error('Error checking availability:', error);
+                    showAvailabilityStatus('error', 'Lỗi kiểm tra khả dụng: ' + error.message);
+                }
+            }
+            
+            function showAvailabilityStatus(type, message) {
+                const statusDiv = document.getElementById('availabilityStatus');
+                statusDiv.className = `mt-2 text-sm ${type === 'success' ? 'text-green-600' : 'text-red-600'}`;
+                statusDiv.textContent = message;
+            }
+            
+            function calculateTotalPrice() {
+                // Calculate duration from actual time inputs if available
+                let duration = parseInt(durationSelect.value) || 0;
+                const startTime = startTimeInput.value;
+                const endTime = endTimeInput.value;
+                
+                // If both start and end times are set, calculate duration from them
+                if (startTime && endTime) {
+                    const [startHour, startMinute] = startTime.split(':').map(Number);
+                    const [endHour, endMinute] = endTime.split(':').map(Number);
+                    const startTotalMinutes = startHour * 60 + startMinute;
+                    const endTotalMinutes = endHour * 60 + endMinute;
+                    const calculatedDuration = endTotalMinutes - startTotalMinutes;
+                    
+                    // Only use calculated duration if it's positive
+                    if (calculatedDuration > 0) {
+                        duration = calculatedDuration;
+                        // Update duration select to match calculated duration
+                        durationSelect.value = duration;
+                        console.log('Using calculated duration:', duration, 'minutes');
+                    }
+                }
+                
+                const basePrice = @Model.Field.FieldType.BasePrice;
+                const voucherCode = document.getElementById('voucherCode').value;
+                const voucherDiscount = parseFloat(document.getElementById('voucherDiscount').value) || 0;
+                
+                // Calculate price based on minutes (basePrice is per hour)
+                const hours = duration / 60;
+                let subtotal = basePrice * hours;
+                let discount = 0;
+                
+                // Update duration display
+                document.getElementById('durationDisplay').textContent = duration + ' phút';
+                
+                console.log('Price calculation:', {
+                    duration: duration,
+                    hours: hours,
+                    basePrice: basePrice,
+                    subtotal: subtotal
+                });
+                
+                // Apply voucher discount
+                if (voucherCode && voucherDiscount > 0) {
+                    if (voucherDiscount <= 1) {
+                        // Percentage discount (0.1 = 10%)
+                        discount = subtotal * voucherDiscount;
+                    } else {
+                        // Fixed amount discount
+                        discount = Math.min(voucherDiscount, subtotal);
+                    }
+                }
+                
+                const total = Math.max(0, subtotal - discount);
+                
+                totalPriceElement.value = total;
+                document.getElementById('subtotalDisplay').textContent = subtotal.toLocaleString('vi-VN') + ' VND';
+                document.getElementById('discountDisplay').textContent = discount.toLocaleString('vi-VN') + ' VND';
+                document.getElementById('totalPriceDisplay').textContent = total.toLocaleString('vi-VN') + ' VND';
+                
+                // Show/hide discount row
+                const discountRow = document.getElementById('discountRow');
+                if (discount > 0) {
+                    discountRow.style.display = 'table-row';
+                } else {
+                    discountRow.style.display = 'none';
+                }
+                
+                console.log('Price calculation updated:', {
+                    duration: duration,
+                    hours: hours,
+                    basePrice: basePrice,
+                    subtotal: subtotal,
+                    discount: discount,
+                    total: total
+                });
+            }
+            
+            // Apply voucher button
+            document.getElementById('applyVoucherBtn').addEventListener('click', async function() {
+                const voucherCode = document.getElementById('voucherCode').value.trim();
+                const messageDiv = document.getElementById('voucherMessage');
+                
+                if (!voucherCode) {
+                    messageDiv.textContent = 'Vui lòng nhập mã giảm giá';
+                    messageDiv.className = 'mt-2 text-sm text-red-600';
+                    messageDiv.classList.remove('hidden');
+                    return;
+                }
+                
+                // Calculate current order amount
+                const duration = parseInt(durationSelect.value) || 0;
+                const basePrice = @Model.Field.FieldType.BasePrice;
+                const durationInHours = duration / 60.0;
+                const orderAmount = basePrice * durationInHours;
+                
+                if (orderAmount <= 0) {
+                    messageDiv.textContent = 'Vui lòng chọn khung giờ và số giờ trước';
+                    messageDiv.className = 'mt-2 text-sm text-red-600';
+                    messageDiv.classList.remove('hidden');
+                    return;
+                }
+                
+                try {
+                    // Call API to validate voucher
+                    const response = await fetch('/Field/ValidateVoucher', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: `voucherCode=${encodeURIComponent(voucherCode)}&orderAmount=${orderAmount}`
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        document.getElementById('voucherDiscount').value = result.discountAmount;
+                        messageDiv.textContent = `✓ ${result.message}`;
+                        messageDiv.className = 'mt-2 text-sm text-green-600';
+                        messageDiv.classList.remove('hidden');
+                        calculateTotalPrice();
+                    } else {
+                        document.getElementById('voucherDiscount').value = 0;
+                        messageDiv.textContent = result.message;
+                        messageDiv.className = 'mt-2 text-sm text-red-600';
+                        messageDiv.classList.remove('hidden');
+                        calculateTotalPrice();
+                    }
+                } catch (error) {
+                    document.getElementById('voucherDiscount').value = 0;
+                    messageDiv.textContent = 'Lỗi khi xác thực mã giảm giá';
+                    messageDiv.className = 'mt-2 text-sm text-red-600';
+                    messageDiv.classList.remove('hidden');
+                    calculateTotalPrice();
+                }
+            });
+            
+            // Clear voucher when code changes
+            document.getElementById('voucherCode').addEventListener('input', function() {
+                if (this.value.trim() === '') {
+                    document.getElementById('voucherDiscount').value = 0;
+                    document.getElementById('voucherMessage').classList.add('hidden');
+                    calculateTotalPrice();
+                }
+            });
+            
+            // Event listeners
+            durationSelect.addEventListener('change', function() {
+                console.log('Duration changed to:', this.value);
+                calculateEndTime(); // Calculate end time based on start time + duration
+                calculateTotalPrice();
+            });
+            
+            startTimeInput.addEventListener('change', function() {
+                console.log('Start time changed to:', this.value);
+                const endTime = endTimeInput.value;
+                
+                // Validate start time first
+                if (!validateTimeInputs()) {
+                    return;
+                }
+                
+                if (endTime) {
+                    // If end time is already set, recalculate duration
+                    calculateDurationFromTimes();
+                } else {
+                    // If end time is not set, calculate it from duration
+                    calculateEndTime();
+                }
+                calculateTotalPrice();
+            });
+            
+            endTimeInput.addEventListener('change', function() {
+                console.log('End time changed to:', this.value);
+                // Validate end time first
+                if (!validateTimeInputs()) {
+                    return;
+                }
+                
+                calculateDurationFromTimes(); // Update duration dropdown based on time range
+                updateTimeRangeDisplay(); // This will also call calculateTotalPrice()
+            });
+            
+            // Check availability button
+            document.getElementById('checkAvailabilityBtn').addEventListener('click', checkAvailability);
+            
+            // Check if user is authenticated
+            const isAuthenticated = @(User.Identity?.IsAuthenticated == true ? "true" : "false");
+            
+            // Form submission validation
+            document.getElementById('bookingForm').addEventListener('submit', async function(e) {
+                // Prevent default form submission first (we'll handle it manually)
+                e.preventDefault();
+                
+                // Check authentication first
+                if (!isAuthenticated) {
+                    if (confirm('Bạn cần đăng nhập để đặt sân. Chuyển đến trang đăng nhập?')) {
+                        window.location.href = '/Account/Login?returnUrl=' + encodeURIComponent(window.location.pathname);
+                    }
+                    return false;
+                }
+                
+                const bookingDate = document.getElementById('bookingDate').value;
+                const startTime = startTimeInput.value;
+                const endTime = endTimeInput.value;
+                const duration = document.getElementById('durationSelect').value;
+                const totalPrice = document.getElementById('totalPrice').value;
+                
+                // Validate required fields
+                if (!bookingDate) {
+                    alert('Vui lòng chọn ngày đặt sân');
+                    return false;
+                }
+                
+                if (!startTime) {
+                    alert('Vui lòng chọn thời gian bắt đầu');
+                    return false;
+                }
+                
+                if (!endTime) {
+                    alert('Vui lòng chọn thời gian kết thúc');
+                    return false;
+                }
+                
+                if (!duration) {
+                    alert('Vui lòng chọn thời gian thuê');
+                    return false;
+                }
+                
+                // Validate time range
+                if (startTime >= endTime) {
+                    alert('Thời gian kết thúc phải sau thời gian bắt đầu');
+                    return false;
+                }
+                
+                // Validate duration matches time range
+                const [startHour, startMinute] = startTime.split(':').map(Number);
+                const [endHour, endMinute] = endTime.split(':').map(Number);
+                const actualDuration = (endHour * 60 + endMinute) - (startHour * 60 + startMinute);
+                
+                if (actualDuration != duration) {
+                    alert('Thời gian thuê không khớp với khoảng thời gian đã chọn');
+                    return false;
+                }
+                
+                if (parseFloat(totalPrice) <= 0) {
+                    alert('Tổng tiền không hợp lệ. Vui lòng kiểm tra lại thông tin đặt sân');
+                    return false;
+                }
+                
+                // Show loading state
+                const submitBtn = this.querySelector('button[type="submit"]');
+                const originalText = submitBtn.textContent;
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Đang xử lý...';
+                
+                console.log('✅ Form validation passed!');
+                console.log('📤 Submitting form to:', this.action);
+                console.log('📝 Form data:', {
+                    FieldId: document.querySelector('[name="FieldId"]').value,
+                    BookingDate: bookingDate,
+                    StartTime: startTime,
+                    EndTime: endTime,
+                    Duration: duration,
+                    TotalPrice: totalPrice,
+                    VoucherCode: document.getElementById('voucherCode').value,
+                    VoucherDiscount: document.getElementById('voucherDiscount').value
+                });
+                
+                // Submit form - it will navigate to ConfirmBooking page
+                try {
+                    this.submit();
+                } catch (error) {
+                    console.error('❌ Error submitting form:', error);
+                    alert('Có lỗi xảy ra khi gửi form. Vui lòng thử lại.');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalText;
+                }
+            });
+            
+            // Initialize price calculation on page load
+            setTimeout(() => calculateTotalPrice(), 100);
+            
+            // Add input event listeners for real-time updates
+            startTimeInput.addEventListener('input', function() {
+                console.log('Start time input changed to:', this.value);
+                if (this.value && endTimeInput.value) {
+                    calculateDurationFromTimes();
+                } else if (this.value && durationSelect.value) {
+                    calculateEndTime();
+                }
+                // Always recalculate price when start time changes
+                setTimeout(() => calculateTotalPrice(), 100);
+            });
+            
+            endTimeInput.addEventListener('input', function() {
+                console.log('End time input changed to:', this.value);
+                if (this.value && startTimeInput.value) {
+                    calculateDurationFromTimes();
+                }
+                // Always recalculate price when end time changes
+                setTimeout(() => calculateTotalPrice(), 100);
+            });
+            
+            // Add change event listener for duration select
+            durationSelect.addEventListener('change', function() {
+                console.log('Duration select changed to:', this.value);
+                if (startTimeInput.value && this.value) {
+                    calculateEndTime();
+                }
+                // Always recalculate price when duration changes
+                setTimeout(() => calculateTotalPrice(), 100);
+            });
+            
+            // Add change event listener for booking date
+            document.getElementById('bookingDate').addEventListener('change', function() {
+                console.log('Booking date changed to:', this.value);
+                // Recalculate price when date changes (in case of different pricing rules)
+                setTimeout(() => calculateTotalPrice(), 100);
+            });
+        });
+    </script>
+}
